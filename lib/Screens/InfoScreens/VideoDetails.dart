@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class VideoDetails extends StatefulWidget {
   final Map<String, String> video;
@@ -11,6 +12,27 @@ class VideoDetails extends StatefulWidget {
 
 class _VideoDetailsState extends State<VideoDetails> {
   bool _descriptionExpanded = false;
+  bool _isPlaying = false;
+  late YoutubePlayerController _youtubePlayerController;
+  late String _videoID;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _videoID = YoutubePlayer.convertUrlToId(widget.video['url'] ?? '')!;
+    _youtubePlayerController = YoutubePlayerController(
+      initialVideoId: _videoID,
+      flags: YoutubePlayerFlags(autoPlay: false, mute: false),
+    );
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _youtubePlayerController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,15 +52,35 @@ class _VideoDetailsState extends State<VideoDetails> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Hero(
-                tag: widget.video['id']!,
-                child: Image.network(
-                  widget.video['thumbnail']!,
-                  width: double.infinity,
-                  height: 180,
-                  fit: BoxFit.cover,
+              (_isPlaying == true)
+                  ? YoutubePlayer(
+                    controller: _youtubePlayerController,
+                    showVideoProgressIndicator: true,
+                  )
+                  : Hero(
+                    tag: widget.video['id']!,
+                    child: Image.network(
+                      widget.video['thumbnail']!,
+                      width: double.infinity,
+                      height: 180,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+              SizedBox(height: 20),
+              MaterialButton(
+                color: Colors.grey.shade900,
+                onPressed: () {
+                  setState(() {
+                    _isPlaying = !_isPlaying;
+                  });
+                },
+                child: Text(
+                  "Play Video",
+                  style: TextStyle(color: Colors.white),
                 ),
               ),
+              SizedBox(height: 20),
+
               SizedBox(height: 20),
               Text(
                 widget.video['title'] ?? "None",
