@@ -47,6 +47,7 @@ dependencies:
   permission_handler: ^12.0.0+1
   http: ^1.4.0
   youtube_player_flutter: ^9.1.1
+  flutter_launcher_icons: ^0.14.3
 
 dev_dependencies:
   flutter_test:
@@ -103,3 +104,8 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "images/logo.png"
