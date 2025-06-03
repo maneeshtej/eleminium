@@ -1,8 +1,9 @@
-import 'dart:async';
-
-import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:course_app/Screens/homeScreen.dart';
 import 'package:course_app/Screens/landingPage.dart';
+import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
+import 'dart:async';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -12,45 +13,59 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+
   @override
   void initState() {
-    Timer(Duration(seconds: 2), () {
-      Navigator.push(
-        context,
-        PageTransition(
-          child: Landingpage(),
-          type: PageTransitionType.rightToLeftWithFade,
-        ),
-      );
-    });
     super.initState();
+
+    Timer(Duration(seconds: 2), () {
+      final user = _firebaseAuth.currentUser;
+
+      if (!mounted) return; // ⛑️ Safely check if widget is still in tree
+
+      if (user != null) {
+        Navigator.pushReplacement(
+          context,
+          PageTransition(
+            child: Homescreen(),
+            type: PageTransitionType.rightToLeftWithFade,
+          ),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          PageTransition(
+            child: Landingpage(),
+            type: PageTransitionType.rightToLeftWithFade,
+          ),
+        );
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Container(
-        child: Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(height: 150, child: Image.asset('images/logo.png')),
-              Text(
-                "Eleminum",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(height: 150, child: Image.asset('images/logo.png')),
+            Text(
+              "Eleminum",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
-              Padding(
-                padding: EdgeInsets.only(top: 200),
-                child: CircularProgressIndicator(color: Colors.amber),
-              ),
-            ],
-          ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 200),
+              child: CircularProgressIndicator(color: Colors.amber),
+            ),
+          ],
         ),
       ),
     );

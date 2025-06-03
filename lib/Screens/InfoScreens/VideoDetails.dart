@@ -1,10 +1,12 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:course_app/Services/DataController.dart';
 
 class VideoDetails extends StatefulWidget {
-  final Map<String, String> video;
-  const VideoDetails({super.key, required this.video});
+  final String videoId; // Now pass just the video ID
+  const VideoDetails({super.key, required this.videoId});
 
   @override
   State<VideoDetails> createState() => _VideoDetailsState();
@@ -14,135 +16,184 @@ class _VideoDetailsState extends State<VideoDetails> {
   bool _descriptionExpanded = false;
   bool _isPlaying = false;
   late YoutubePlayerController _youtubePlayerController;
-  late String _videoID;
+  final Datacontroller _datacontroller = Datacontroller();
+
+  Map<String, dynamic>? _videoData;
+
+  final String apiKey = 'YOUR_YOUTUBE_API_KEY_HERE';
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    _videoID = YoutubePlayer.convertUrlToId(widget.video['url'] ?? '')!;
+
     _youtubePlayerController = YoutubePlayerController(
-      initialVideoId: _videoID,
+      initialVideoId: widget.videoId,
       flags: YoutubePlayerFlags(autoPlay: false, mute: false),
     );
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     _youtubePlayerController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final data = _videoData;
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         title: Text(
-          widget.video['title'] ?? '',
+          data?['title'] ?? 'Loading...',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.black,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.only(left: 15, right: 15),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              (_isPlaying == true)
-                  ? YoutubePlayer(
-                    controller: _youtubePlayerController,
-                    showVideoProgressIndicator: true,
-                  )
-                  : Hero(
-                    tag: widget.video['id']!,
-                    child: Image.network(
-                      widget.video['thumbnail']!,
-                      width: double.infinity,
-                      height: 180,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-              SizedBox(height: 20),
-              MaterialButton(
-                color: Colors.grey.shade900,
-                onPressed: () {
-                  setState(() {
-                    _isPlaying = !_isPlaying;
-                  });
-                },
-                child: Text(
-                  "Play Video",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-              SizedBox(height: 20),
-
-              SizedBox(height: 20),
-              Text(
-                widget.video['title'] ?? "None",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 2),
-              Text(
-                "By ${widget.video['creator'] ?? "Unknown"}",
-                style: TextStyle(color: Colors.grey.shade400),
-              ),
-              SizedBox(height: 2),
-              Text(
-                (widget.video['publishedAt'] != null)
-                    ? "Published on ${widget.video['publishedAt']?.split('T')[0]}"
-                    : "Unknown",
-                style: TextStyle(color: Colors.grey.shade400),
-              ),
-              SizedBox(height: 10),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _descriptionExpanded = !_descriptionExpanded;
-                  });
-                },
-                child: RichText(
-                  text: TextSpan(
+      body:
+          data == null
+              ? Center(child: CircularProgressIndicator(color: Colors.white))
+              : SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.all(15),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextSpan(
-                        text:
-                            !_descriptionExpanded
-                                ? (widget.video['description']?.substring(
-                                          0,
-                                          200,
-                                        ) ??
-                                        '') +
-                                    '... '
-                                : widget.video['description'] ?? '',
-                        style: const TextStyle(color: Colors.white),
+                      _isPlaying
+                          ? SizedBox(
+                            height: 200,
+                            child: YoutubePlayer(
+                              controller: _youtubePlayerController,
+                              showVideoProgressIndicator: true,
+                            ),
+                          )
+                          : Image.network(
+                            data['thumbnails']['maxres']?['url'] ??
+                                data['thumbnails']['high']?['url'] ??
+                                data['thumbnails']['default']?['url'],
+                            width: double.infinity,
+                            height: 200,
+                            fit: BoxFit.cover,
+                          ),
+                      SizedBox(height: 20),
+                      Row(
+                        spacing: 0,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _isPlaying = !_isPlaying;
+                              });
+                            },
+                            child: Container(
+                              padding: EdgeInsets.only(
+                                left: 10,
+                                right: 17,
+                                top: 5,
+                                bottom: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade50,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+
+                              child: Row(
+                                children:
+                                    (!_isPlaying)
+                                        ? [
+                                          Icon(Icons.play_arrow),
+                                          Text(
+                                            "Play",
+                                            style: TextStyle(fontSize: 15),
+                                          ),
+                                        ]
+                                        : [
+                                          Icon(Icons.pause),
+                                          Text(
+                                            "Pause",
+                                            style: TextStyle(fontSize: 15),
+                                          ),
+                                        ],
+                              ),
+                            ),
+                          ),
+
+                          Expanded(child: SizedBox()),
+                          IconButton(
+                            onPressed: () {},
+                            icon: Icon(Icons.thumb_up, color: Colors.white),
+                          ),
+                          IconButton(
+                            onPressed: () {},
+                            icon: Icon(Icons.watch_later, color: Colors.white),
+                          ),
+                        ],
                       ),
-                      if ((widget.video['description']?.length ?? 0) > 200)
-                        TextSpan(
-                          text:
-                              _descriptionExpanded ? 'Show less' : 'Read more',
-                          style: const TextStyle(
-                            color: Colors.blueAccent,
-                            fontWeight: FontWeight.bold,
+                      SizedBox(height: 20),
+                      Text(
+                        data['title'] ?? '',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'By ${data['channelTitle'] ?? "Unknown"}',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'Published on ${data['publishedAt'].toString().split("T")[0]}',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      SizedBox(height: 10),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _descriptionExpanded = !_descriptionExpanded;
+                          });
+                        },
+                        child: RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text:
+                                    _descriptionExpanded
+                                        ? data['description']
+                                        : (data['description'] as String)
+                                                .length >
+                                            200
+                                        ? data['description'].substring(
+                                              0,
+                                              200,
+                                            ) +
+                                            '... '
+                                        : data['description'],
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              if ((data['description'] as String).length > 200)
+                                TextSpan(
+                                  text:
+                                      _descriptionExpanded
+                                          ? 'Show less'
+                                          : 'Read more',
+                                  style: TextStyle(
+                                    color: Colors.blueAccent,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
+                      ),
+                      SizedBox(height: 50),
                     ],
                   ),
                 ),
               ),
-
-              SizedBox(height: 50),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

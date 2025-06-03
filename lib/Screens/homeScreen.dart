@@ -1,6 +1,6 @@
-import 'package:course_app/Screens/HomeScreens/Account.dart';
-import 'package:course_app/Screens/HomeScreens/Featured.dart';
-import 'package:course_app/Screens/HomeScreens/MyCourses.dart';
+import 'package:course_app/Screens/HomeScreens/account.dart';
+import 'package:course_app/Screens/HomeScreens/featured.dart';
+import 'package:course_app/Screens/HomeScreens/myCourses.dart';
 import 'package:course_app/Screens/HomeScreens/Search.dart';
 import 'package:course_app/Screens/HomeScreens/Wishlist.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +43,7 @@ class _HomescreenState extends State<Homescreen> {
         backgroundColor: Colors.grey.shade900,
         selectedIconTheme: IconThemeData(color: Colors.white),
         unselectedIconTheme: IconThemeData(color: Colors.grey.shade500),
-        selectedItemColor: Colors.amber,
+        selectedItemColor: Colors.deepPurple.shade300,
         unselectedItemColor: Colors.grey.shade500,
         selectedLabelStyle: TextStyle(fontSize: 10),
         unselectedLabelStyle: TextStyle(

@@ -185,6 +185,5 @@ class _AccountState extends State<Account> {
         ),
       ),
     );
-    ;
   }
 }

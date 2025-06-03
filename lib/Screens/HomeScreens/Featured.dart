@@ -1,11 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:course_app/Screens/InfoScreens/VideoDetails.dart';
-import 'package:course_app/Services/DataController.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/get_instance.dart';
-import 'package:get/get_state_manager/src/simple/get_state.dart';
 
 class Featured extends StatefulWidget {
   const Featured({super.key});
@@ -18,169 +11,228 @@ class _FeaturedState extends State<Featured> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.grey.shade900,
-        title: Text(
-          "Featured",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.shopping_cart_outlined, color: Colors.white),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: EdgeInsets.only(top: 15, left: 15, right: 15),
-        child: SingleChildScrollView(
+      backgroundColor: Colors.grey.shade900,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.only(left: 20, right: 20, top: 50),
           child: Column(
             children: [
-              Container(
-                height: 200,
-                width: 400,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                  image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: AssetImage('images/sales.jpg'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Hello Tej",
+                        style: TextStyle(
+                          fontSize: 35,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        "Got any cookies?...",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                  const CircleAvatar(),
+                ],
               ),
+              const SizedBox(height: 30),
               Container(
-                padding: EdgeInsets.all(10),
-                margin: EdgeInsets.only(top: 15),
+                height: 100,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                  color: Colors.grey.shade600,
+                  color: Colors.grey.shade500,
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
                 ),
-                child: Column(
+                child: Stack(
                   children: [
-                    Text(
-                      "Huge Sale!!",
-                      style: TextStyle(
-                        color: Colors.amber.shade300,
-                        fontSize: 30,
-                        fontWeight: FontWeight.w900,
+                    Container(
+                      width: 130,
+                      decoration: BoxDecoration(
+                        color: Colors.deepPurple.shade400,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                          bottomLeft: Radius.circular(10),
+                        ),
                       ),
                     ),
-                    Text(
-                      "Buy now to save 70% on your favourite courses",
-                      style: TextStyle(color: Colors.white, fontSize: 10),
+                    const Padding(
+                      padding: EdgeInsets.all(15.0),
+                      child: Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Text(
+                          "My Plan",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 15),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Featured",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+              const SizedBox(height: 30),
+              Row(
+                children: const [
+                  Text(
+                    "Continue Learning",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
+                  SizedBox(width: 10),
+                  Icon(Icons.arrow_forward, color: Colors.white),
+                ],
               ),
-              SizedBox(height: 5),
-              FeaturedVideosWidget(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class FeaturedVideosWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 300,
-      child: FutureBuilder<List<Map<String, String>>>(
-        future: Get.find<Datacontroller>().getVideoData('Featured'),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return const Center(child: Text('Error loading videos'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No videos found'));
-          }
-
-          final videos = snapshot.data!;
-          return ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: videos.length,
-            itemBuilder: (context, index) {
-              final video = videos[index];
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: GestureDetector(
-                  onTap: () {
-                    Get.to(() => VideoDetails(video: video));
-                  },
-                  child: Column(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: Hero(
-                          tag: video['id']!,
-                          child: Image.network(
-                            video['thumbnail']!,
-                            width: 200,
-                            height: 120,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, progress) {
-                              if (progress == null) return child;
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            },
-                            errorBuilder:
-                                (context, error, stackTrace) =>
-                                    const Icon(Icons.broken_image),
-                          ),
-                        ),
+              const SizedBox(height: 20),
+              SizedBox(
+                height: 160,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: 5,
+                  separatorBuilder: (_, __) => const SizedBox(width: 15),
+                  itemBuilder: (context, index) {
+                    return Container(
+                      width: 200,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade800,
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(height: 8),
-                      Container(
-                        width: 200,
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              video['title'] ?? 'Unknown',
-                              style: TextStyle(color: Colors.white),
+                            Container(
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: Colors.deepPurple.shade300,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.play_circle_fill,
+                                  size: 40,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
+                            const SizedBox(height: 10),
+                            const Text(
+                              "Placeholder Video Title",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
                             Text(
-                              video['creator'] ?? 'Unkown',
+                              "Channel Name",
                               style: TextStyle(
                                 color: Colors.grey.shade400,
-                                fontSize: 10,
+                                fontSize: 12,
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
-          );
-        },
+              ),
+
+              const SizedBox(height: 30),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  Text(
+                    "Completed Videos",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Icon(Icons.check_circle, color: Colors.white),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+              SizedBox(
+                height: 160,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: 5,
+                  separatorBuilder: (_, __) => const SizedBox(width: 15),
+                  itemBuilder: (context, index) {
+                    return Container(
+                      width: 200,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade700,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade400,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.play_arrow,
+                                  size: 40,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            const Text(
+                              "Completed Video Title",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              "Channel Name",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: 100),
+
+              // You can add more widgets here (e.g., horizontally scrolling videos)
+            ],
+          ),
+        ),
       ),
     );
   }

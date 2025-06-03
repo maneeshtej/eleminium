@@ -31,6 +31,5 @@ class _MycoursesState extends State<Mycourses> {
       ),
       body: Container(color: Colors.black),
     );
-    ;
   }
 }

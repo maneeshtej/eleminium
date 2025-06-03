@@ -24,7 +24,16 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        brightness: Brightness.light,
+        primarySwatch: Colors.deepPurple,
+        scaffoldBackgroundColor: Colors.white,
+        textTheme: TextTheme(bodyMedium: TextStyle(color: Colors.black)),
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        primarySwatch: Colors.deepPurple,
+        scaffoldBackgroundColor: Colors.grey.shade900,
+        textTheme: TextTheme(bodyMedium: TextStyle(color: Colors.white)),
       ),
       home: SplashScreen(),
     );

@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 
 import 'package:http/http.dart' as http;
@@ -9,93 +7,83 @@ class Datacontroller extends GetxController {
   final String apiKey =
       'AIzaSyDAP2BqUnyoobIRCUbwVqVUyiULVdAYa5I'; // Replace with your key
 
-  Future<List<Map<String, String>>> getVideoData(String collection) async {
-    QuerySnapshot snapshot =
-        await FirebaseFirestore.instance.collection(collection).get();
+  Future<List<Map<String, String>>> searchYoutube(
+    String query, {
+    String? pageT,
+  }) async {
+    final searchUrl =
+        "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&q=${Uri.encodeQueryComponent(query)}&key=$apiKey";
 
-    List<Map<String, String>> videos = [];
+    final searchResponse = await http.get(Uri.parse(searchUrl));
 
-    for (var doc in snapshot.docs) {
-      final url = doc['url'];
-      final videoId = _extractYoutubeVideoId(url);
+    if (searchResponse.statusCode != 200) {
+      print('Failed to search videos');
+      return [];
+    }
+
+    final searchData = json.decode(searchResponse.body);
+    print(searchData);
+    final items = searchData['items'];
+
+    List<String> videoIds = [];
+    Map<String, dynamic> videoSnippets = {};
+
+    for (var item in items) {
+      final videoId = item['id']['videoId'];
       if (videoId != null) {
-        final metadata = await _fetchVideoMetadata(videoId);
-        if (metadata != null) {
-          videos.add({
-            'id': videoId,
-            'url': url,
-            'thumbnail': 'https://img.youtube.com/vi/$videoId/0.jpg',
-            'title': metadata['title'] ?? 'Unknown',
-            'creator': metadata['channelTitle'] ?? 'Unknown',
-            'description': metadata['description'] ?? 'None',
-            'publishedAt': metadata['publishedAt'] ?? 'Unknown',
-          });
-        }
+        videoIds.add(videoId);
+        videoSnippets[videoId] = item['snippet'];
       }
     }
 
-    return videos;
+    // Step 2: Get video durations
+    final detailsUrl =
+        'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${videoIds.join(",")}&key=$apiKey';
+
+    final detailsResponse = await http.get(Uri.parse(detailsUrl));
+
+    if (detailsResponse.statusCode != 200) {
+      print('Failed to fetch video details');
+      return [];
+    }
+
+    final detailsData = json.decode(detailsResponse.body);
+    final List<Map<String, String>> filteredResults = [];
+
+    for (var item in detailsData['items']) {
+      final id = item['id'];
+      final duration =
+          item['contentDetails']['duration']; // ISO 8601 format (e.g., PT58S, PT3M10S)
+
+      final seconds = _parseDuration(duration);
+      if (seconds >= 60) {
+        final snippet = videoSnippets[id];
+        filteredResults.add({
+          'id': id,
+          'title': snippet['title'],
+          'thumbnail': snippet['thumbnails']['high']['url'],
+          'creator': snippet['channelTitle'],
+          'description': snippet['description'],
+          'publishedAt': snippet['publishedAt'],
+          'url': 'https://www.youtube.com/watch?v=$id',
+        });
+      }
+    }
+
+    return filteredResults;
   }
 
-  Future<Map<String, String>?> _fetchVideoMetadata(String videoId) async {
-    final videoUrl =
-        'https://www.googleapis.com/youtube/v3/videos?part=snippet&id=$videoId&key=$apiKey';
+  // Utility to parse ISO 8601 durations
+  int _parseDuration(String isoDuration) {
+    final regex = RegExp(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?');
+    final match = regex.firstMatch(isoDuration);
 
-    final videoResponse = await http.get(Uri.parse(videoUrl));
-    if (videoResponse.statusCode == 200) {
-      final videoData = json.decode(videoResponse.body);
-      if (videoData['items'] != null && videoData['items'].isNotEmpty) {
-        final snippet = videoData['items'][0]['snippet'];
-        final title = snippet['title']?.toString() ?? 'No Title';
-        final channelId = snippet['channelId'];
-        final description = snippet['description'];
-        final publishedAt = snippet['publishedAt'];
+    if (match == null) return 0;
 
-        // 🔁 Now make a second call to get the channel title
-        final channelTitle = await _getChannelTitle(channelId);
+    final hours = int.tryParse(match.group(1) ?? '0') ?? 0;
+    final minutes = int.tryParse(match.group(2) ?? '0') ?? 0;
+    final seconds = int.tryParse(match.group(3) ?? '0') ?? 0;
 
-        return {
-          'title': title,
-          'channelTitle': channelTitle ?? 'Unknown Creator',
-          'description': description ?? "None",
-          'publishedAt': publishedAt ?? "Unknown",
-        };
-      }
-    } else {
-      print('Failed to fetch video metadata');
-    }
-    return null;
-  }
-
-  Future<String?> _getChannelTitle(String channelId) async {
-    final channelUrl =
-        'https://www.googleapis.com/youtube/v3/channels?part=snippet&id=$channelId&key=$apiKey';
-
-    final response = await http.get(Uri.parse(channelUrl));
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data['items'] != null && data['items'].isNotEmpty) {
-        return data['items'][0]['snippet']['title']?.toString();
-      } else {
-        print('No channel data found for channelId: $channelId');
-      }
-    } else {
-      print('Failed to fetch channel metadata');
-    }
-    return null;
-  }
-
-  String? _extractYoutubeVideoId(String url) {
-    try {
-      Uri uri = Uri.parse(url);
-      if (uri.host.contains("youtu.be")) {
-        return uri.pathSegments.first;
-      } else if (uri.queryParameters.containsKey("v")) {
-        return uri.queryParameters["v"];
-      }
-    } catch (e) {
-      print('Invalid URL: $url');
-    }
-    return null;
+    return hours * 3600 + minutes * 60 + seconds;
   }
 }
