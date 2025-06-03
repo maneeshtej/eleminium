@@ -48,10 +48,19 @@ dependencies:
   http: ^1.4.0
   youtube_player_flutter: ^9.1.1
   flutter_launcher_icons: ^0.14.3
+  isar: ^3.1.0+1
+  isar_flutter_libs: 
+    path: ./isar_flutter_fixed
+  path_provider: ^2.1.5
+ 
+  
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  isar_generator: ^3.1.0+1
+  build_runner: ^2.4.13
+  
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

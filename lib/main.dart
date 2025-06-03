@@ -1,4 +1,5 @@
 import 'package:course_app/Services/DataController.dart';
+import 'package:course_app/Services/isarController.dart';
 import 'package:course_app/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   Get.put(Datacontroller());
+  Get.put(IsarController());
   runApp(const MyApp());
 }
 

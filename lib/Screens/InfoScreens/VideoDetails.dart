@@ -1,5 +1,12 @@
+import 'dart:async';
+
+import 'package:course_app/Model/video.dart';
 import 'package:course_app/Services/DataController.dart';
+import 'package:course_app/Services/isarController.dart';
 import 'package:flutter/material.dart';
+import 'package:get/instance_manager.dart';
+import 'package:get/route_manager.dart';
+import 'package:isar/isar.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class VideoDetails extends StatefulWidget {
@@ -12,8 +19,10 @@ class VideoDetails extends StatefulWidget {
 
 class _VideoDetailsState extends State<VideoDetails> {
   bool _descriptionExpanded = false;
-  bool _isPlaying = false;
+  bool _hasResumed = false;
   late YoutubePlayerController _youtubePlayerController;
+  final _isarController = Get.find<IsarController>();
+  Timer? _progressTimer;
 
   Map<String, dynamic>? _videoData;
 
@@ -28,20 +37,99 @@ class _VideoDetailsState extends State<VideoDetails> {
       initialVideoId: widget.videoId,
       flags: YoutubePlayerFlags(autoPlay: false, mute: false),
     );
+
     loadVideoDetails();
+
+    _progressTimer = Timer.periodic(Duration(seconds: 5), (_) {
+      if (_youtubePlayerController.value.isPlaying) {
+        _saveProgress();
+      }
+    });
   }
 
   Future<void> loadVideoDetails() async {
-    final data = await _datacontroller.fetchVideoDetails(widget.videoId);
-    if (data != null) {
-      setState(() {
-        _videoData = data;
-      });
+    final videoId = widget.videoId;
+    final isar = await _isarController.isar;
+
+    final localVideo =
+        await isar.videos.filter().videoIdEqualTo(videoId).findFirst();
+
+    final data = await _datacontroller.fetchVideoDetails(videoId);
+    if (data == null) return;
+
+    int watched = 0;
+
+    if (localVideo == null) {
+      final data = await _datacontroller.fetchVideoDetails(videoId);
+
+      final video =
+          Video()
+            ..videoId = videoId
+            ..watchedDuration = 0
+            ..lastWatched = DateTime.now()
+            ..totalDuration = 0
+            ..isWatched = false
+            ..title = data?['title']
+            ..thumbnailUrl = data?['thumbnailUrl']
+            ..channelTitle = data?['channelTitle'];
+
+      await isar.writeTxn(() async => await isar.videos.put(video));
+    } else {
+      watched = localVideo.watchedDuration;
     }
+
+    setState(() {
+      _videoData = {
+        ...data,
+        'watchedDuration': watched,
+        'totalDuration': localVideo?.totalDuration ?? 0,
+        'isWatched': localVideo?.isWatched ?? false,
+      };
+    });
+
+    // ✅ Auto-seek after metadata is ready
+    _youtubePlayerController.addListener(() {
+      if (_youtubePlayerController.value.isReady &&
+          watched > 0 &&
+          _youtubePlayerController.value.position.inSeconds == 0) {
+        _youtubePlayerController.seekTo(Duration(seconds: watched));
+      }
+    });
+  }
+
+  Future<void> _saveProgress({
+    String? title,
+    String? thumbnailUrl,
+    String? channelTitle,
+  }) async {
+    final watched = _youtubePlayerController.value.position.inSeconds;
+    final total = _youtubePlayerController.metadata.duration.inSeconds;
+
+    await _isarController.updateVideoProgress(
+      widget.videoId,
+      watchedDuration: watched,
+      totalDuration: total,
+      isWatched: watched >= total - 5,
+      title: title,
+      thumbnailUrl: thumbnailUrl,
+      channelTitle: channelTitle,
+    );
+  }
+
+  Future<void> clearAllVideos() async {
+    final isar = await _isarController.isar;
+
+    await isar.writeTxn(() async {
+      await isar.videos.clear(); // deletes all Video objects
+    });
+
+    Get.snackbar('History Cleared', 'All videos removed from local history');
   }
 
   @override
   void dispose() {
+    _saveProgress(); // Final save
+    _progressTimer?.cancel();
     _youtubePlayerController.dispose();
     super.dispose();
   }
@@ -68,65 +156,18 @@ class _VideoDetailsState extends State<VideoDetails> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _isPlaying
-                          ? SizedBox(
-                            height: 200,
-                            child: YoutubePlayer(
-                              controller: _youtubePlayerController,
-                              showVideoProgressIndicator: true,
-                            ),
-                          )
-                          : Image.network(
-                            data['thumbnails']['maxres']?['url'] ??
-                                data['thumbnails']['high']?['url'] ??
-                                data['thumbnails']['default']?['url'],
-                            width: double.infinity,
-                            height: 200,
-                            fit: BoxFit.cover,
-                          ),
+                      SizedBox(
+                        height: 200,
+                        child: YoutubePlayer(
+                          controller: _youtubePlayerController,
+                          showVideoProgressIndicator: true,
+                        ),
+                      ),
+
                       SizedBox(height: 20),
                       Row(
                         spacing: 0,
                         children: [
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _isPlaying = !_isPlaying;
-                              });
-                            },
-                            child: Container(
-                              padding: EdgeInsets.only(
-                                left: 10,
-                                right: 17,
-                                top: 5,
-                                bottom: 5,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade50,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-
-                              child: Row(
-                                children:
-                                    (!_isPlaying)
-                                        ? [
-                                          Icon(Icons.play_arrow),
-                                          Text(
-                                            "Play",
-                                            style: TextStyle(fontSize: 15),
-                                          ),
-                                        ]
-                                        : [
-                                          Icon(Icons.pause),
-                                          Text(
-                                            "Pause",
-                                            style: TextStyle(fontSize: 15),
-                                          ),
-                                        ],
-                              ),
-                            ),
-                          ),
-
                           Expanded(child: SizedBox()),
                           IconButton(
                             onPressed: () {},
@@ -135,6 +176,10 @@ class _VideoDetailsState extends State<VideoDetails> {
                           IconButton(
                             onPressed: () {},
                             icon: Icon(Icons.watch_later, color: Colors.white),
+                          ),
+                          IconButton(
+                            onPressed: () {},
+                            icon: Icon(Icons.menu_open_rounded),
                           ),
                         ],
                       ),
@@ -197,6 +242,11 @@ class _VideoDetailsState extends State<VideoDetails> {
                           ),
                         ),
                       ),
+                      ElevatedButton(
+                        onPressed: clearAllVideos,
+                        child: Text('Clear All History'),
+                      ),
+
                       SizedBox(height: 50),
                     ],
                   ),
