@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -7,23 +6,25 @@ class Datacontroller extends GetxController {
   final String apiKey =
       'AIzaSyDAP2BqUnyoobIRCUbwVqVUyiULVdAYa5I'; // Replace with your key
 
-  Future<List<Map<String, String>>> searchYoutube(
+  // Title prefix to exclude// <-- You can change this
+
+  Future<Map<String, dynamic>> searchYoutube(
     String query, {
-    String? pageT,
+    String? pageToken,
   }) async {
     final searchUrl =
-        "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&q=${Uri.encodeQueryComponent(query)}&key=$apiKey";
+        "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=50&q=${Uri.encodeQueryComponent(query)}&key=$apiKey${pageToken != null ? '&pageToken=$pageToken' : ''}";
 
     final searchResponse = await http.get(Uri.parse(searchUrl));
 
     if (searchResponse.statusCode != 200) {
       print('Failed to search videos');
-      return [];
+      return {'results': [], 'nextPageToken': null};
     }
 
     final searchData = json.decode(searchResponse.body);
-    print(searchData);
     final items = searchData['items'];
+    final nextPage = searchData['nextPageToken'];
 
     List<String> videoIds = [];
     Map<String, dynamic> videoSnippets = {};
@@ -36,7 +37,8 @@ class Datacontroller extends GetxController {
       }
     }
 
-    // Step 2: Get video durations
+    if (videoIds.isEmpty) return {'results': [], 'nextPageToken': nextPage};
+
     final detailsUrl =
         'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${videoIds.join(",")}&key=$apiKey';
 
@@ -44,7 +46,7 @@ class Datacontroller extends GetxController {
 
     if (detailsResponse.statusCode != 200) {
       print('Failed to fetch video details');
-      return [];
+      return {'results': [], 'nextPageToken': nextPage};
     }
 
     final detailsData = json.decode(detailsResponse.body);
@@ -52,28 +54,27 @@ class Datacontroller extends GetxController {
 
     for (var item in detailsData['items']) {
       final id = item['id'];
-      final duration =
-          item['contentDetails']['duration']; // ISO 8601 format (e.g., PT58S, PT3M10S)
+      final durationStr = item['contentDetails']['duration'];
+      final durationSeconds = _parseDuration(durationStr);
 
-      final seconds = _parseDuration(duration);
-      if (seconds >= 60) {
+      if (durationSeconds >= 60) {
         final snippet = videoSnippets[id];
         filteredResults.add({
           'id': id,
           'title': snippet['title'],
-          'thumbnail': snippet['thumbnails']['high']['url'],
+          'thumbnail': snippet['thumbnails']['default']['url'],
           'creator': snippet['channelTitle'],
           'description': snippet['description'],
           'publishedAt': snippet['publishedAt'],
+          'duration': durationSeconds.toString(),
           'url': 'https://www.youtube.com/watch?v=$id',
         });
       }
     }
 
-    return filteredResults;
+    return {'results': filteredResults, 'nextPageToken': nextPage};
   }
 
-  // Utility to parse ISO 8601 durations
   int _parseDuration(String isoDuration) {
     final regex = RegExp(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?');
     final match = regex.firstMatch(isoDuration);
@@ -85,5 +86,28 @@ class Datacontroller extends GetxController {
     final seconds = int.tryParse(match.group(3) ?? '0') ?? 0;
 
     return hours * 3600 + minutes * 60 + seconds;
+  }
+
+  Future<Map<String, dynamic>?> fetchVideoDetails(String videoId) async {
+    final url = Uri.parse(
+      'https://www.googleapis.com/youtube/v3/videos?part=snippet&id=$videoId&key=$apiKey',
+    );
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final items = data['items'];
+
+      if (items != null && items.isNotEmpty) {
+        return items[0]['snippet'];
+      } else {
+        print("No video data found.");
+        return null;
+      }
+    } else {
+      print('Failed to fetch video details: ${response.statusCode}');
+      return null;
+    }
   }
 }

@@ -31,6 +31,5 @@ class _WishlistState extends State<Wishlist> {
       ),
       body: Container(color: Colors.black),
     );
-    ;
   }
 }

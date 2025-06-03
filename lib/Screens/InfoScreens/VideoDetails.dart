@@ -1,8 +1,6 @@
+import 'package:course_app/Services/DataController.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:course_app/Services/DataController.dart';
 
 class VideoDetails extends StatefulWidget {
   final String videoId; // Now pass just the video ID
@@ -16,11 +14,11 @@ class _VideoDetailsState extends State<VideoDetails> {
   bool _descriptionExpanded = false;
   bool _isPlaying = false;
   late YoutubePlayerController _youtubePlayerController;
-  final Datacontroller _datacontroller = Datacontroller();
 
   Map<String, dynamic>? _videoData;
 
   final String apiKey = 'YOUR_YOUTUBE_API_KEY_HERE';
+  final Datacontroller _datacontroller = Datacontroller();
 
   @override
   void initState() {
@@ -30,6 +28,16 @@ class _VideoDetailsState extends State<VideoDetails> {
       initialVideoId: widget.videoId,
       flags: YoutubePlayerFlags(autoPlay: false, mute: false),
     );
+    loadVideoDetails();
+  }
+
+  Future<void> loadVideoDetails() async {
+    final data = await _datacontroller.fetchVideoDetails(widget.videoId);
+    if (data != null) {
+      setState(() {
+        _videoData = data;
+      });
+    }
   }
 
   @override
