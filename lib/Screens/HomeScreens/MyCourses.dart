@@ -2,7 +2,6 @@ import 'package:course_app/Screens/InfoScreens/VideoDetails.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:course_app/Services/isarController.dart';
-import 'package:course_app/Services/DataController.dart';
 import 'package:course_app/Model/video.dart';
 import 'package:isar/isar.dart';
 
@@ -15,7 +14,6 @@ class Mycourses extends StatefulWidget {
 
 class _MycoursesState extends State<Mycourses> {
   final _isarController = Get.find<IsarController>();
-  final _dataController = Datacontroller();
 
   List<Map<String, dynamic>> _historyVideos = [];
 
