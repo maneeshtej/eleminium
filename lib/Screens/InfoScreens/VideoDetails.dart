@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:course_app/Dialouges/addToPlaylist.dart';
 import 'package:course_app/Model/video.dart';
 import 'package:course_app/Services/DataController.dart';
 import 'package:course_app/Services/isarController.dart';
@@ -20,6 +21,7 @@ class _VideoDetailsState extends State<VideoDetails> {
   late YoutubePlayerController _youtubePlayerController;
   final _isarController = Get.find<Isarcontroller>();
   Timer? _progressTimer;
+  bool isLiked = false;
 
   Map<String, dynamic>? _videoData;
 
@@ -101,6 +103,12 @@ class _VideoDetailsState extends State<VideoDetails> {
         }
       });
     }
+
+    final isLikedTemp = await _isarController.isInLikedPlaylist(videoId);
+
+    setState(() {
+      isLiked = isLikedTemp;
+    });
   }
 
   Future<void> _saveProgress({
@@ -193,47 +201,66 @@ class _VideoDetailsState extends State<VideoDetails> {
                             padding: const EdgeInsets.symmetric(),
                             child: Row(
                               spacing: 0,
-
                               children: [
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(20),
+                                GestureDetector(
+                                  onTap: () {},
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 5,
                                     ),
-                                  ),
-                                  child: Text(
-                                    "Plan",
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(20),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      "Playlist",
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
                                     ),
                                   ),
                                 ),
                                 Expanded(child: SizedBox()),
                                 IconButton(
-                                  onPressed: () {},
+                                  onPressed: () async {
+                                    await _isarController.toggleLikedStatus(
+                                      widget.videoId,
+                                      data,
+                                      context,
+                                    );
+
+                                    final updatedStatus = await _isarController
+                                        .isInLikedPlaylist(widget.videoId);
+
+                                    // ✅ Update and rebuild
+                                    setState(() {
+                                      isLiked = updatedStatus;
+                                    });
+
+                                    await _isarController
+                                        .printLikedPlaylistVideos();
+                                  },
                                   icon: Icon(
-                                    Icons.thumb_up,
+                                    (isLiked)
+                                        ? Icons.thumb_up
+                                        : Icons.thumb_up_outlined,
                                     color: Colors.white,
                                   ),
                                 ),
+                                SizedBox(width: 5),
                                 IconButton(
                                   onPressed: () {},
                                   icon: Icon(
-                                    Icons.watch_later,
+                                    Icons.thumb_down,
                                     color: Colors.white,
                                   ),
                                 ),
-                                IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(Icons.menu_open_rounded),
-                                ),
+                                SizedBox(width: 20),
                               ],
                             ),
                           ),

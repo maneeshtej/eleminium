@@ -13,6 +13,7 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   Get.put(Datacontroller());
   Get.put(Isarcontroller());
+  await Get.find<Isarcontroller>().ensureDefaultPlaylistsExist();
   runApp(const MyApp());
 }
 
