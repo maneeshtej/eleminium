@@ -7,17 +7,18 @@ class Video {
   Id id = Isar.autoIncrement;
 
   @Index(type: IndexType.value)
-  late String videoId; // YouTube video ID
+  late String videoId;
 
-  late int watchedDuration; // Seconds watched
-  late int totalDuration; // Total video duration (optional)
-
-  late DateTime lastWatched; // Last watched time
+  late int watchedDuration;
+  late int totalDuration;
+  late DateTime lastWatched;
 
   bool isWatched = false;
 
-  // ✅ Cache metadata
+  // ✅ Metadata
   String? title;
-  String? thumbnailUrl;
   String? channelTitle;
+
+  // ✅ Store thumbnail as List<int>
+  List<int>? thumbnailBytes;
 }

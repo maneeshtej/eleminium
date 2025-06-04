@@ -11,7 +11,7 @@ class _FeaturedState extends State<Featured> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade900,
+      backgroundColor: Colors.black,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.only(left: 20, right: 20, top: 50),
@@ -51,7 +51,7 @@ class _FeaturedState extends State<Featured> {
                 height: 100,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade500,
+                  color: Colors.grey.shade800,
                   borderRadius: const BorderRadius.all(Radius.circular(10)),
                 ),
                 child: Stack(
@@ -109,7 +109,7 @@ class _FeaturedState extends State<Featured> {
                     return Container(
                       width: 200,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade800,
+                        color: Colors.grey.shade900,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Padding(
@@ -182,7 +182,7 @@ class _FeaturedState extends State<Featured> {
                     return Container(
                       width: 200,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade700,
+                        color: Colors.grey.shade900,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Padding(

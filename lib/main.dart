@@ -12,7 +12,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   Get.put(Datacontroller());
-  Get.put(IsarController());
+  Get.put(Isarcontroller());
   runApp(const MyApp());
 }
 

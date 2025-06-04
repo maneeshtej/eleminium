@@ -1,4 +1,6 @@
-import 'package:course_app/Screens/InfoScreens/VideoDetails.dart';
+import 'dart:typed_data';
+
+import 'package:course_app/Screens/InfoScreens/videoDetails.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:course_app/Services/isarController.dart';
@@ -13,7 +15,7 @@ class Mycourses extends StatefulWidget {
 }
 
 class _MycoursesState extends State<Mycourses> {
-  final _isarController = Get.find<IsarController>();
+  final _isarController = Get.find<Isarcontroller>();
 
   List<Map<String, dynamic>> _historyVideos = [];
 
@@ -32,7 +34,7 @@ class _MycoursesState extends State<Mycourses> {
           await isar.videos
               .filter()
               .watchedDurationGreaterThan(0)
-              .sortByLastWatchedDesc()
+              .sortByLastWatched()
               .findAll();
 
       final List<Map<String, dynamic>> history =
@@ -40,14 +42,14 @@ class _MycoursesState extends State<Mycourses> {
             return {
               'videoId': video.videoId,
               'title': video.title ?? '',
-              'thumbnailUrl': video.thumbnailUrl ?? '',
+              'thumbnailBytes': video.thumbnailBytes ?? '',
               'channelTitle': video.channelTitle ?? '',
             };
           }).toList();
 
       setState(() {
         _historyVideos = history;
-        print("history is  : ${history}");
+        // print("history is  : ${history}");
       });
     } catch (e, st) {
       print('Error loading history videos: $e\n$st');
@@ -120,11 +122,30 @@ class _MycoursesState extends State<Mycourses> {
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
-                                  child: Container(
-                                    height: 100,
-                                    color: Colors.grey.shade500,
-                                  ),
+                                  child:
+                                      video['thumbnailBytes'] != null &&
+                                              (video['thumbnailBytes'] as List)
+                                                  .isNotEmpty
+                                          ? Image.memory(
+                                            Uint8List.fromList(
+                                              video['thumbnailBytes'].toList(),
+                                            ),
+                                            height: 100,
+                                            width: double.infinity,
+                                            fit: BoxFit.cover,
+                                          )
+                                          : Container(
+                                            height: 100,
+                                            color: Colors.grey.shade500,
+                                            child: Center(
+                                              child: Icon(
+                                                Icons.image,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
                                 ),
+
                                 const SizedBox(height: 6),
                                 Text(
                                   video['title'],

@@ -62,9 +62,14 @@ class Datacontroller extends GetxController {
         filteredResults.add({
           'id': id,
           'title': snippet['title'],
-          'thumbnail': snippet['thumbnails']['default']['url'],
+          'thumbnail':
+              snippet['thumbnails']?['high']?['url'] ??
+              snippet['thumbnails']?['medium']?['url'] ??
+              snippet['thumbnails']?['default']?['url'] ??
+              '',
+
           'creator': snippet['channelTitle'],
-          'description': snippet['description'],
+          // 'description': snippet['description'],
           'publishedAt': snippet['publishedAt'],
           'duration': durationSeconds.toString(),
           'url': 'https://www.youtube.com/watch?v=$id',
@@ -100,6 +105,7 @@ class Datacontroller extends GetxController {
       final items = data['items'];
 
       if (items != null && items.isNotEmpty) {
+        // print(items[0]['snippet']['thumbnails']);
         return items[0]['snippet'];
       } else {
         print("No video data found.");

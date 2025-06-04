@@ -1,4 +1,4 @@
-import 'package:course_app/Screens/InfoScreens/VideoDetails.dart';
+import 'package:course_app/Screens/InfoScreens/videoDetails.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:course_app/Services/DataController.dart';
@@ -94,7 +94,7 @@ class _SearchState extends State<Search> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade900, // Optional dark theme
+      backgroundColor: Colors.black, // Optional dark theme
       body: Padding(
         padding: const EdgeInsets.only(left: 20, right: 20, top: 50),
         child: Column(
@@ -178,12 +178,12 @@ class _SearchState extends State<Search> {
                           Get.to(VideoDetails(videoId: video['id']!));
                         },
                         child: Card(
-                          color: Colors.grey.shade900,
+                          color: Colors.black,
                           margin: EdgeInsets.symmetric(vertical: 8),
                           child: ListTile(
                             contentPadding: EdgeInsets.only(
-                              top: 10,
-                              bottom: 10,
+                              top: 00,
+                              bottom: 0,
                               left: 5,
                             ),
                             leading: Image.network(

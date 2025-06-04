@@ -32,10 +32,10 @@ const VideoSchema = CollectionSchema(
       name: r'lastWatched',
       type: IsarType.dateTime,
     ),
-    r'thumbnailUrl': PropertySchema(
+    r'thumbnailBytes': PropertySchema(
       id: 3,
-      name: r'thumbnailUrl',
-      type: IsarType.string,
+      name: r'thumbnailBytes',
+      type: IsarType.longList,
     ),
     r'title': PropertySchema(
       id: 4,
@@ -99,9 +99,9 @@ int _videoEstimateSize(
     }
   }
   {
-    final value = object.thumbnailUrl;
+    final value = object.thumbnailBytes;
     if (value != null) {
-      bytesCount += 3 + value.length * 3;
+      bytesCount += 3 + value.length * 8;
     }
   }
   {
@@ -123,7 +123,7 @@ void _videoSerialize(
   writer.writeString(offsets[0], object.channelTitle);
   writer.writeBool(offsets[1], object.isWatched);
   writer.writeDateTime(offsets[2], object.lastWatched);
-  writer.writeString(offsets[3], object.thumbnailUrl);
+  writer.writeLongList(offsets[3], object.thumbnailBytes);
   writer.writeString(offsets[4], object.title);
   writer.writeLong(offsets[5], object.totalDuration);
   writer.writeString(offsets[6], object.videoId);
@@ -141,7 +141,7 @@ Video _videoDeserialize(
   object.id = id;
   object.isWatched = reader.readBool(offsets[1]);
   object.lastWatched = reader.readDateTime(offsets[2]);
-  object.thumbnailUrl = reader.readStringOrNull(offsets[3]);
+  object.thumbnailBytes = reader.readLongList(offsets[3]);
   object.title = reader.readStringOrNull(offsets[4]);
   object.totalDuration = reader.readLong(offsets[5]);
   object.videoId = reader.readString(offsets[6]);
@@ -163,7 +163,7 @@ P _videoDeserializeProp<P>(
     case 2:
       return (reader.readDateTime(offset)) as P;
     case 3:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readLongList(offset)) as P;
     case 4:
       return (reader.readStringOrNull(offset)) as P;
     case 5:
@@ -669,149 +669,161 @@ extension VideoQueryFilter on QueryBuilder<Video, Video, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailUrlIsNull() {
+  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailBytesIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'thumbnailUrl',
+        property: r'thumbnailBytes',
       ));
     });
   }
 
-  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailUrlIsNotNull() {
+  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailBytesIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'thumbnailUrl',
+        property: r'thumbnailBytes',
       ));
     });
   }
 
-  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailUrlEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Video, Video, QAfterFilterCondition>
+      thumbnailBytesElementEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'thumbnailUrl',
+        property: r'thumbnailBytes',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailUrlGreaterThan(
-    String? value, {
+  QueryBuilder<Video, Video, QAfterFilterCondition>
+      thumbnailBytesElementGreaterThan(
+    int value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'thumbnailUrl',
+        property: r'thumbnailBytes',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailUrlLessThan(
-    String? value, {
+  QueryBuilder<Video, Video, QAfterFilterCondition>
+      thumbnailBytesElementLessThan(
+    int value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'thumbnailUrl',
+        property: r'thumbnailBytes',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailUrlBetween(
-    String? lower,
-    String? upper, {
+  QueryBuilder<Video, Video, QAfterFilterCondition>
+      thumbnailBytesElementBetween(
+    int lower,
+    int upper, {
     bool includeLower = true,
     bool includeUpper = true,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'thumbnailUrl',
+        property: r'thumbnailBytes',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailUrlStartsWith(
-    String value, {
-    bool caseSensitive = true,
+  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailBytesLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'thumbnailBytes',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailBytesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'thumbnailBytes',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailBytesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'thumbnailBytes',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Video, Video, QAfterFilterCondition>
+      thumbnailBytesLengthLessThan(
+    int length, {
+    bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'thumbnailUrl',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.listLength(
+        r'thumbnailBytes',
+        0,
+        true,
+        length,
+        include,
+      );
     });
   }
 
-  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailUrlEndsWith(
-    String value, {
-    bool caseSensitive = true,
+  QueryBuilder<Video, Video, QAfterFilterCondition>
+      thumbnailBytesLengthGreaterThan(
+    int length, {
+    bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'thumbnailUrl',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.listLength(
+        r'thumbnailBytes',
+        length,
+        include,
+        999999,
+        true,
+      );
     });
   }
 
-  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailUrlContains(
-      String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailBytesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'thumbnailUrl',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailUrlMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'thumbnailUrl',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailUrlIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'thumbnailUrl',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Video, Video, QAfterFilterCondition> thumbnailUrlIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'thumbnailUrl',
-        value: '',
-      ));
+      return query.listLength(
+        r'thumbnailBytes',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 
@@ -1237,18 +1249,6 @@ extension VideoQuerySortBy on QueryBuilder<Video, Video, QSortBy> {
     });
   }
 
-  QueryBuilder<Video, Video, QAfterSortBy> sortByThumbnailUrl() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'thumbnailUrl', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Video, Video, QAfterSortBy> sortByThumbnailUrlDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'thumbnailUrl', Sort.desc);
-    });
-  }
-
   QueryBuilder<Video, Video, QAfterSortBy> sortByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
@@ -1347,18 +1347,6 @@ extension VideoQuerySortThenBy on QueryBuilder<Video, Video, QSortThenBy> {
     });
   }
 
-  QueryBuilder<Video, Video, QAfterSortBy> thenByThumbnailUrl() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'thumbnailUrl', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Video, Video, QAfterSortBy> thenByThumbnailUrlDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'thumbnailUrl', Sort.desc);
-    });
-  }
-
   QueryBuilder<Video, Video, QAfterSortBy> thenByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
@@ -1428,10 +1416,9 @@ extension VideoQueryWhereDistinct on QueryBuilder<Video, Video, QDistinct> {
     });
   }
 
-  QueryBuilder<Video, Video, QDistinct> distinctByThumbnailUrl(
-      {bool caseSensitive = true}) {
+  QueryBuilder<Video, Video, QDistinct> distinctByThumbnailBytes() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'thumbnailUrl', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'thumbnailBytes');
     });
   }
 
@@ -1487,9 +1474,9 @@ extension VideoQueryProperty on QueryBuilder<Video, Video, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Video, String?, QQueryOperations> thumbnailUrlProperty() {
+  QueryBuilder<Video, List<int>?, QQueryOperations> thumbnailBytesProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'thumbnailUrl');
+      return query.addPropertyName(r'thumbnailBytes');
     });
   }
 
