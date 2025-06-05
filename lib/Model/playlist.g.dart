@@ -17,16 +17,10 @@ const PlaylistSchema = CollectionSchema(
   name: r'Playlist',
   id: 4190497698144499986,
   properties: {
-    r'name': PropertySchema(
+    r'playlistName': PropertySchema(
       id: 0,
-      name: r'name',
+      name: r'playlistName',
       type: IsarType.string,
-    ),
-    r'type': PropertySchema(
-      id: 1,
-      name: r'type',
-      type: IsarType.byte,
-      enumMap: _PlaylisttypeEnumValueMap,
     )
   },
   estimateSize: _playlistEstimateSize,
@@ -35,14 +29,14 @@ const PlaylistSchema = CollectionSchema(
   deserializeProp: _playlistDeserializeProp,
   idName: r'id',
   indexes: {
-    r'name': IndexSchema(
-      id: 879695947855722453,
-      name: r'name',
+    r'playlistName': IndexSchema(
+      id: 2973069029140208061,
+      name: r'playlistName',
       unique: true,
       replace: false,
       properties: [
         IndexPropertySchema(
-          name: r'name',
+          name: r'playlistName',
           type: IndexType.hash,
           caseSensitive: true,
         )
@@ -70,7 +64,7 @@ int _playlistEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  bytesCount += 3 + object.name.length * 3;
+  bytesCount += 3 + object.playlistName.length * 3;
   return bytesCount;
 }
 
@@ -80,8 +74,7 @@ void _playlistSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.name);
-  writer.writeByte(offsets[1], object.type.index);
+  writer.writeString(offsets[0], object.playlistName);
 }
 
 Playlist _playlistDeserialize(
@@ -92,9 +85,7 @@ Playlist _playlistDeserialize(
 ) {
   final object = Playlist();
   object.id = id;
-  object.name = reader.readString(offsets[0]);
-  object.type = _PlaylisttypeValueEnumMap[reader.readByteOrNull(offsets[1])] ??
-      PlaylistType.liked;
+  object.playlistName = reader.readString(offsets[0]);
   return object;
 }
 
@@ -107,24 +98,10 @@ P _playlistDeserializeProp<P>(
   switch (propertyId) {
     case 0:
       return (reader.readString(offset)) as P;
-    case 1:
-      return (_PlaylisttypeValueEnumMap[reader.readByteOrNull(offset)] ??
-          PlaylistType.liked) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
-
-const _PlaylisttypeEnumValueMap = {
-  'liked': 0,
-  'watchLater': 1,
-  'custom': 2,
-};
-const _PlaylisttypeValueEnumMap = {
-  0: PlaylistType.liked,
-  1: PlaylistType.watchLater,
-  2: PlaylistType.custom,
-};
 
 Id _playlistGetId(Playlist object) {
   return object.id;
@@ -140,56 +117,58 @@ void _playlistAttach(IsarCollection<dynamic> col, Id id, Playlist object) {
 }
 
 extension PlaylistByIndex on IsarCollection<Playlist> {
-  Future<Playlist?> getByName(String name) {
-    return getByIndex(r'name', [name]);
+  Future<Playlist?> getByPlaylistName(String playlistName) {
+    return getByIndex(r'playlistName', [playlistName]);
   }
 
-  Playlist? getByNameSync(String name) {
-    return getByIndexSync(r'name', [name]);
+  Playlist? getByPlaylistNameSync(String playlistName) {
+    return getByIndexSync(r'playlistName', [playlistName]);
   }
 
-  Future<bool> deleteByName(String name) {
-    return deleteByIndex(r'name', [name]);
+  Future<bool> deleteByPlaylistName(String playlistName) {
+    return deleteByIndex(r'playlistName', [playlistName]);
   }
 
-  bool deleteByNameSync(String name) {
-    return deleteByIndexSync(r'name', [name]);
+  bool deleteByPlaylistNameSync(String playlistName) {
+    return deleteByIndexSync(r'playlistName', [playlistName]);
   }
 
-  Future<List<Playlist?>> getAllByName(List<String> nameValues) {
-    final values = nameValues.map((e) => [e]).toList();
-    return getAllByIndex(r'name', values);
+  Future<List<Playlist?>> getAllByPlaylistName(
+      List<String> playlistNameValues) {
+    final values = playlistNameValues.map((e) => [e]).toList();
+    return getAllByIndex(r'playlistName', values);
   }
 
-  List<Playlist?> getAllByNameSync(List<String> nameValues) {
-    final values = nameValues.map((e) => [e]).toList();
-    return getAllByIndexSync(r'name', values);
+  List<Playlist?> getAllByPlaylistNameSync(List<String> playlistNameValues) {
+    final values = playlistNameValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'playlistName', values);
   }
 
-  Future<int> deleteAllByName(List<String> nameValues) {
-    final values = nameValues.map((e) => [e]).toList();
-    return deleteAllByIndex(r'name', values);
+  Future<int> deleteAllByPlaylistName(List<String> playlistNameValues) {
+    final values = playlistNameValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'playlistName', values);
   }
 
-  int deleteAllByNameSync(List<String> nameValues) {
-    final values = nameValues.map((e) => [e]).toList();
-    return deleteAllByIndexSync(r'name', values);
+  int deleteAllByPlaylistNameSync(List<String> playlistNameValues) {
+    final values = playlistNameValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'playlistName', values);
   }
 
-  Future<Id> putByName(Playlist object) {
-    return putByIndex(r'name', object);
+  Future<Id> putByPlaylistName(Playlist object) {
+    return putByIndex(r'playlistName', object);
   }
 
-  Id putByNameSync(Playlist object, {bool saveLinks = true}) {
-    return putByIndexSync(r'name', object, saveLinks: saveLinks);
+  Id putByPlaylistNameSync(Playlist object, {bool saveLinks = true}) {
+    return putByIndexSync(r'playlistName', object, saveLinks: saveLinks);
   }
 
-  Future<List<Id>> putAllByName(List<Playlist> objects) {
-    return putAllByIndex(r'name', objects);
+  Future<List<Id>> putAllByPlaylistName(List<Playlist> objects) {
+    return putAllByIndex(r'playlistName', objects);
   }
 
-  List<Id> putAllByNameSync(List<Playlist> objects, {bool saveLinks = true}) {
-    return putAllByIndexSync(r'name', objects, saveLinks: saveLinks);
+  List<Id> putAllByPlaylistNameSync(List<Playlist> objects,
+      {bool saveLinks = true}) {
+    return putAllByIndexSync(r'playlistName', objects, saveLinks: saveLinks);
   }
 }
 
@@ -267,44 +246,45 @@ extension PlaylistQueryWhere on QueryBuilder<Playlist, Playlist, QWhereClause> {
     });
   }
 
-  QueryBuilder<Playlist, Playlist, QAfterWhereClause> nameEqualTo(String name) {
+  QueryBuilder<Playlist, Playlist, QAfterWhereClause> playlistNameEqualTo(
+      String playlistName) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'name',
-        value: [name],
+        indexName: r'playlistName',
+        value: [playlistName],
       ));
     });
   }
 
-  QueryBuilder<Playlist, Playlist, QAfterWhereClause> nameNotEqualTo(
-      String name) {
+  QueryBuilder<Playlist, Playlist, QAfterWhereClause> playlistNameNotEqualTo(
+      String playlistName) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'name',
+              indexName: r'playlistName',
               lower: [],
-              upper: [name],
+              upper: [playlistName],
               includeUpper: false,
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'name',
-              lower: [name],
+              indexName: r'playlistName',
+              lower: [playlistName],
               includeLower: false,
               upper: [],
             ));
       } else {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'name',
-              lower: [name],
+              indexName: r'playlistName',
+              lower: [playlistName],
               includeLower: false,
               upper: [],
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'name',
+              indexName: r'playlistName',
               lower: [],
-              upper: [name],
+              upper: [playlistName],
               includeUpper: false,
             ));
       }
@@ -366,20 +346,21 @@ extension PlaylistQueryFilter
     });
   }
 
-  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> nameEqualTo(
+  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> playlistNameEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'name',
+        property: r'playlistName',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> nameGreaterThan(
+  QueryBuilder<Playlist, Playlist, QAfterFilterCondition>
+      playlistNameGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -387,14 +368,14 @@ extension PlaylistQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'name',
+        property: r'playlistName',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> nameLessThan(
+  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> playlistNameLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -402,14 +383,14 @@ extension PlaylistQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'name',
+        property: r'playlistName',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> nameBetween(
+  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> playlistNameBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -418,7 +399,7 @@ extension PlaylistQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'name',
+        property: r'playlistName',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -428,123 +409,73 @@ extension PlaylistQueryFilter
     });
   }
 
-  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> nameStartsWith(
+  QueryBuilder<Playlist, Playlist, QAfterFilterCondition>
+      playlistNameStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'name',
+        property: r'playlistName',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> nameEndsWith(
+  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> playlistNameEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'name',
+        property: r'playlistName',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> nameContains(
+  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> playlistNameContains(
       String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'name',
+        property: r'playlistName',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> nameMatches(
+  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> playlistNameMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'name',
+        property: r'playlistName',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> nameIsEmpty() {
+  QueryBuilder<Playlist, Playlist, QAfterFilterCondition>
+      playlistNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'name',
+        property: r'playlistName',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> nameIsNotEmpty() {
+  QueryBuilder<Playlist, Playlist, QAfterFilterCondition>
+      playlistNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'name',
+        property: r'playlistName',
         value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> typeEqualTo(
-      PlaylistType value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'type',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> typeGreaterThan(
-    PlaylistType value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'type',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> typeLessThan(
-    PlaylistType value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'type',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Playlist, Playlist, QAfterFilterCondition> typeBetween(
-    PlaylistType lower,
-    PlaylistType upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'type',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
       ));
     });
   }
@@ -614,27 +545,15 @@ extension PlaylistQueryLinks
 }
 
 extension PlaylistQuerySortBy on QueryBuilder<Playlist, Playlist, QSortBy> {
-  QueryBuilder<Playlist, Playlist, QAfterSortBy> sortByName() {
+  QueryBuilder<Playlist, Playlist, QAfterSortBy> sortByPlaylistName() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'name', Sort.asc);
+      return query.addSortBy(r'playlistName', Sort.asc);
     });
   }
 
-  QueryBuilder<Playlist, Playlist, QAfterSortBy> sortByNameDesc() {
+  QueryBuilder<Playlist, Playlist, QAfterSortBy> sortByPlaylistNameDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'name', Sort.desc);
-    });
-  }
-
-  QueryBuilder<Playlist, Playlist, QAfterSortBy> sortByType() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'type', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Playlist, Playlist, QAfterSortBy> sortByTypeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'type', Sort.desc);
+      return query.addSortBy(r'playlistName', Sort.desc);
     });
   }
 }
@@ -653,43 +572,25 @@ extension PlaylistQuerySortThenBy
     });
   }
 
-  QueryBuilder<Playlist, Playlist, QAfterSortBy> thenByName() {
+  QueryBuilder<Playlist, Playlist, QAfterSortBy> thenByPlaylistName() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'name', Sort.asc);
+      return query.addSortBy(r'playlistName', Sort.asc);
     });
   }
 
-  QueryBuilder<Playlist, Playlist, QAfterSortBy> thenByNameDesc() {
+  QueryBuilder<Playlist, Playlist, QAfterSortBy> thenByPlaylistNameDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'name', Sort.desc);
-    });
-  }
-
-  QueryBuilder<Playlist, Playlist, QAfterSortBy> thenByType() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'type', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Playlist, Playlist, QAfterSortBy> thenByTypeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'type', Sort.desc);
+      return query.addSortBy(r'playlistName', Sort.desc);
     });
   }
 }
 
 extension PlaylistQueryWhereDistinct
     on QueryBuilder<Playlist, Playlist, QDistinct> {
-  QueryBuilder<Playlist, Playlist, QDistinct> distinctByName(
+  QueryBuilder<Playlist, Playlist, QDistinct> distinctByPlaylistName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<Playlist, Playlist, QDistinct> distinctByType() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'type');
+      return query.addDistinctBy(r'playlistName', caseSensitive: caseSensitive);
     });
   }
 }
@@ -702,15 +603,9 @@ extension PlaylistQueryProperty
     });
   }
 
-  QueryBuilder<Playlist, String, QQueryOperations> nameProperty() {
+  QueryBuilder<Playlist, String, QQueryOperations> playlistNameProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'name');
-    });
-  }
-
-  QueryBuilder<Playlist, PlaylistType, QQueryOperations> typeProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'type');
+      return query.addPropertyName(r'playlistName');
     });
   }
 }
