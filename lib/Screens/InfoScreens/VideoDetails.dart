@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'package:course_app/Model/video.dart';
 import 'package:course_app/Services/DataController.dart';
 import 'package:course_app/Services/isarController.dart';
 import 'package:flutter/material.dart';
 import 'package:get/instance_manager.dart';
-import 'package:isar/isar.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class VideoDetails extends StatefulWidget {
@@ -59,7 +57,6 @@ class _VideoDetailsState extends State<VideoDetails> {
 
   Future<void> loadVideoDetails() async {
     final videoId = widget.videoId;
-    final isar = await _isarController.isar;
 
     // Fetch fresh data from API
     final data = await _datacontroller.fetchVideoDetails(videoId);
