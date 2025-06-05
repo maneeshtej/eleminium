@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart'; // Make sure get is in pubspec.yaml
+
 import 'package:course_app/Screens/homeScreen.dart';
 import 'package:course_app/Screens/landingPage.dart';
-import 'package:flutter/material.dart';
-import 'package:page_transition/page_transition.dart';
-import 'dart:async';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,31 +15,22 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
+  bool _navigated = false;
+
   @override
   void initState() {
     super.initState();
 
-    Timer(Duration(seconds: 2), () {
-      final user = _firebaseAuth.currentUser;
+    // Start listening to auth state changes
+    _firebaseAuth.authStateChanges().listen((User? user) {
+      if (!mounted || _navigated) return;
 
-      if (!mounted) return; // ⛑️ Safely check if widget is still in tree
+      _navigated = true; // Prevent multiple navigations
 
-      if (user != null) {
-        Navigator.pushReplacement(
-          context,
-          PageTransition(
-            child: Homescreen(),
-            type: PageTransitionType.rightToLeftWithFade,
-          ),
-        );
+      if (user == null) {
+        Get.offAll(() => Landingpage());
       } else {
-        Navigator.pushReplacement(
-          context,
-          PageTransition(
-            child: Landingpage(),
-            type: PageTransitionType.rightToLeftWithFade,
-          ),
-        );
+        Get.offAll(() => Homescreen());
       }
     });
   }
@@ -61,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Padding(
+            const Padding(
               padding: EdgeInsets.only(top: 200),
               child: CircularProgressIndicator(color: Colors.amber),
             ),
