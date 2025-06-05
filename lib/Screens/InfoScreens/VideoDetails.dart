@@ -21,6 +21,7 @@ class _VideoDetailsState extends State<VideoDetails> {
   final _isarController = Get.find<Isarcontroller>();
   Timer? _progressTimer;
   bool isLiked = false;
+  bool isWatcherLater = false;
 
   Map<String, dynamic>? _videoData;
 
@@ -38,75 +39,57 @@ class _VideoDetailsState extends State<VideoDetails> {
 
     loadVideoDetails();
 
-    _progressTimer = Timer.periodic(Duration(seconds: 5), (_) {
+    // Call the async initializer
+    _checkLikedAndWatchLaterAndPlaylists();
+
+    // Setup periodic progress saving
+    _progressTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (_youtubePlayerController.value.isPlaying) {
         _saveProgress();
       }
     });
   }
 
+  Future<void> _checkLikedAndWatchLaterAndPlaylists() async {
+    isLiked = await _isarController.isLiked(widget.videoId);
+    isWatcherLater = await _isarController.isWatchLater(widget.videoId);
+
+    setState(() {}); // Trigger UI update after values are set
+  }
+
   Future<void> loadVideoDetails() async {
     final videoId = widget.videoId;
     final isar = await _isarController.isar;
 
-    // Try to get saved video from DB
-    final localVideo =
-        await isar.videos.filter().videoIdEqualTo(videoId).findFirst();
-
-    // Fetch fresh data from API regardless
+    // Fetch fresh data from API
     final data = await _datacontroller.fetchVideoDetails(videoId);
 
-    if (localVideo == null) {
-      // If no saved video, create and store new video record
-      await _isarController.createAndStoreVideo(videoId, data);
-
-      setState(() {
-        _videoData = data;
-      });
-
-      final savedVideo =
-          await isar.videos.filter().videoIdEqualTo(videoId).findFirst();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('video added ${savedVideo?.title}'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    } else {
-      // If localVideo exists, merge data with local info (watched duration etc)
-      setState(() {
-        _videoData = {
-          ...?data,
-          'watchedDuration': localVideo.watchedDuration,
-          'totalDuration': localVideo.totalDuration,
-          'isWatched': localVideo.isWatched,
-        };
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('This is loaded video ${localVideo.title}'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-
-      // ✅ Auto-seek after metadata is ready
-      _youtubePlayerController.addListener(() {
-        if (_youtubePlayerController.value.isReady &&
-            localVideo.watchedDuration > 0 &&
-            _youtubePlayerController.value.position.inSeconds == 0) {
-          _youtubePlayerController.seekTo(
-            Duration(seconds: localVideo.watchedDuration),
-          );
-        }
-      });
-    }
-
-    final isLikedTemp = await _isarController.isInLikedPlaylist(videoId);
+    // Always create or update video in Isar
+    final updatedVideo = await _isarController.createOrUpdateVideo(
+      videoId,
+      data,
+      context,
+    );
 
     setState(() {
-      isLiked = isLikedTemp;
+      _videoData = {
+        ...?data,
+        'watchedDuration': updatedVideo.watchedDuration,
+        'totalDuration': updatedVideo.totalDuration,
+        'isWatched': updatedVideo.isWatched,
+      };
+    });
+
+    // ✅ Auto-seek to last watched position unconditionally
+    _youtubePlayerController.addListener(() {
+      if (_youtubePlayerController.value.isReady &&
+          updatedVideo.watchedDuration > 0 &&
+          _youtubePlayerController.value.position.inSeconds == 0) {
+        _youtubePlayerController.seekTo(
+          Duration(seconds: updatedVideo.watchedDuration),
+        );
+        _youtubePlayerController.pause();
+      }
     });
   }
 
@@ -118,15 +101,20 @@ class _VideoDetailsState extends State<VideoDetails> {
     final watched = _youtubePlayerController.value.position.inSeconds;
     final total = _youtubePlayerController.metadata.duration.inSeconds;
 
-    await _isarController.updateVideoProgress(
-      widget.videoId,
-      watchedDuration: watched,
-      totalDuration: total,
-      isWatched: watched >= total - 5,
-      title: title,
-      thumbnailUrl: thumbnailUrl,
-      channelTitle: channelTitle,
-    );
+    // Create a map similar to what createOrUpdateVideo expects
+    final data = {
+      'watchedDuration': watched,
+      'totalDuration': total,
+      'isWatched': watched >= total - 5,
+      if (title != null) 'title': title,
+      if (channelTitle != null) 'channelTitle': channelTitle,
+      if (thumbnailUrl != null)
+        'thumbnails': {
+          'high': {'url': thumbnailUrl},
+        },
+    };
+
+    await _isarController.createOrUpdateVideo(widget.videoId, data, context);
   }
 
   @override
@@ -227,22 +215,17 @@ class _VideoDetailsState extends State<VideoDetails> {
                                 Expanded(child: SizedBox()),
                                 IconButton(
                                   onPressed: () async {
-                                    await _isarController.toggleLikedStatus(
+                                    await _isarController.toggleLiked(
                                       widget.videoId,
                                       data,
                                       context,
                                     );
-
-                                    final updatedStatus = await _isarController
-                                        .isInLikedPlaylist(widget.videoId);
-
-                                    // ✅ Update and rebuild
+                                    final liked = await _isarController.isLiked(
+                                      widget.videoId,
+                                    );
                                     setState(() {
-                                      isLiked = updatedStatus;
+                                      isLiked = liked;
                                     });
-
-                                    await _isarController
-                                        .printLikedPlaylistVideos();
                                   },
                                   icon: Icon(
                                     (isLiked)
@@ -253,9 +236,23 @@ class _VideoDetailsState extends State<VideoDetails> {
                                 ),
                                 SizedBox(width: 5),
                                 IconButton(
-                                  onPressed: () {},
+                                  onPressed: () async {
+                                    await _isarController.toggleWatchLater(
+                                      widget.videoId,
+                                      data,
+                                      context,
+                                    );
+                                    final watchlater = await _isarController
+                                        .isWatchLater(widget.videoId);
+
+                                    setState(() {
+                                      isWatcherLater = watchlater;
+                                    });
+                                  },
                                   icon: Icon(
-                                    Icons.thumb_down,
+                                    !isWatcherLater
+                                        ? Icons.watch_later_outlined
+                                        : Icons.watch_later,
                                     color: Colors.white,
                                   ),
                                 ),

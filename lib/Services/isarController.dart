@@ -1,4 +1,5 @@
-import 'package:course_app/Enums/playListType.dart';
+import 'dart:typed_data';
+
 import 'package:course_app/Model/playlist.dart';
 import 'package:course_app/Model/video.dart';
 import 'package:flutter/material.dart';
@@ -21,33 +22,35 @@ class Isarcontroller extends GetxController {
     return await Isar.open([VideoSchema, PlaylistSchema], directory: dir.path);
   }
 
-  Future<void> createAndStoreVideo(
-    String videoId,
-    Map<String, dynamic>? data,
-  ) async {
-    final isarInstance = await isar;
+  // --------------------------------------
+  // ---------  PLAYLIST INIT -------------
+  // --------------------------------------
 
-    final video =
-        Video()
-          ..videoId = videoId
-          ..watchedDuration = 0
-          ..lastWatched = DateTime.now()
-          ..totalDuration = 0
-          ..isWatched = false
-          ..title = data?['title']
-          ..channelTitle = data?['channelTitle']
-          ..thumbnailBytes = await fetchThumbnailBytes(
-            data?['thumbnails']?['high']?['url'] ??
-                data?['thumbnails']?['medium']?['url'] ??
-                data?['thumbnails']?['default']?['url'],
-          );
+  Future<void> defaultPlaylistInitialize() async {
+    final isar = await this.isar;
 
-    await isarInstance.writeTxn(() async {
-      await isarInstance.videos.put(video);
+    final liked =
+        await isar.playlists.filter().playlistNameEqualTo("Liked").findFirst();
+    final watchLater =
+        await isar.playlists
+            .filter()
+            .playlistNameEqualTo("Watch Later")
+            .findFirst();
+
+    await isar.writeTxn(() async {
+      if (liked == null) {
+        await isar.playlists.put(Playlist()..playlistName = "Liked");
+      }
+
+      if (watchLater == null) {
+        await isar.playlists.put(Playlist()..playlistName = "Watch Later");
+      }
     });
-
-    // print(data);
   }
+
+  // --------------------------------------
+  // -------------- UTILITY ---------------
+  // --------------------------------------
 
   Future<List<int>?> fetchThumbnailBytes(String? url) async {
     if (url == null || url.isEmpty) return null;
@@ -61,179 +64,352 @@ class Isarcontroller extends GetxController {
     return null;
   }
 
-  Future<void> updateVideoProgress(
-    String videoId, {
-    required int watchedDuration,
-    required int totalDuration,
-    required bool isWatched,
-    String? title,
-    String? thumbnailUrl,
-    String? channelTitle,
-  }) async {
-    final isar = await this.isar;
-    final video =
-        await isar.videos.filter().videoIdEqualTo(videoId).findFirst();
-
-    if (video != null) {
-      video.watchedDuration = watchedDuration;
-      video.totalDuration = totalDuration;
-      video.isWatched = isWatched;
-      video.lastWatched = DateTime.now();
-
-      // Update metadata if provided and not empty
-      if (title != null && title.isNotEmpty) video.title = title;
-      if (thumbnailUrl != null && thumbnailUrl.isNotEmpty) {
-        video.thumbnailBytes = await fetchThumbnailBytes(thumbnailUrl);
-      }
-      if (channelTitle != null && channelTitle.isNotEmpty) {
-        video.channelTitle = channelTitle;
-      }
-      await isar.writeTxn(() async {
-        await isar.videos.put(video);
-      });
-    }
-  }
-
-  Future<void> ensureDefaultPlaylistsExist() async {
-    final isar = await this.isar;
-
-    final liked =
-        await isar.playlists
-            .filter()
-            .typeEqualTo(PlaylistType.liked)
-            .findFirst();
-
-    await isar.writeTxn(() async {
-      if (liked == null) {
-        await isar.playlists.put(
-          Playlist()
-            ..name = 'Liked'
-            ..type = PlaylistType.liked,
-        );
-      }
-    });
-  }
-
-  Future<void> toggleLikedStatus(
+  Future<Video> convertMapStringDynamictoVideo(
     String videoId,
-    Map<String, dynamic> data,
+    Map<String, dynamic>? data,
+  ) async {
+    if (data == null) {
+      return Video();
+    }
+    final video =
+        Video()
+          ..videoId = videoId
+          ..watchedDuration = 0
+          ..totalDuration = 0
+          ..lastWatched = DateTime.now()
+          ..isWatched = false
+          ..title = data?['title']
+          ..channelTitle = data?['channelTitle']
+          ..thumbnailBytes = await fetchThumbnailBytes(
+            data?['thumbnails']?['high']?['url'] ??
+                data?['thumbnails']?['medium']?['url'] ??
+                data?['thumbnails']?['default']?['url'],
+          );
+
+    return video;
+  }
+
+  Future<List<Playlist>> getAllPlaylists() async {
+    final isar = await this.isar;
+
+    final playlists = await isar.playlists.where().findAll();
+
+    for (final playlist in playlists) {
+      await playlist.videos.load();
+    }
+
+    return playlists;
+  }
+
+  // --------------------------------------
+  // -------------- VIDEOS ----------------
+  // --------------------------------------
+
+  Future<void> createVideo(
+    String videoId,
+    Map<String, dynamic>? data,
     BuildContext context,
   ) async {
     final isar = await this.isar;
 
+    final video = await convertMapStringDynamictoVideo(videoId, data);
+
     await isar.writeTxn(() async {
-      // Get or create video
-      final existingVideo =
-          await isar.videos.filter().videoIdEqualTo(videoId).findFirst();
-
-      final video =
-          existingVideo ??
-          (Video()
-            ..videoId = videoId
-            ..watchedDuration = 0
-            ..lastWatched = DateTime.now()
-            ..totalDuration = 0
-            ..isWatched = false
-            ..title = data['title']
-            ..channelTitle = data['channelTitle']
-            ..thumbnailBytes = await fetchThumbnailBytes(
-              data['thumbnails']?['high']?['url'] ??
-                  data['thumbnails']?['medium']?['url'] ??
-                  data['thumbnails']?['default']?['url'],
-            ));
-
-      // Ensure video is saved (newly created or updated existing)
       await isar.videos.put(video);
-
-      // Get or create 'Liked' playlist
-      Playlist? liked =
-          await isar.playlists
-              .filter()
-              .typeEqualTo(PlaylistType.liked)
-              .findFirst();
-
-      if (liked == null) {
-        liked =
-            Playlist()
-              ..name = 'Liked'
-              ..type = PlaylistType.liked;
-        await isar.playlists.put(liked);
-      }
-
-      await liked.videos.load(); // Load existing video links
-
-      final isAlreadyLiked = liked.videos.any(
-        (v) => v.videoId == video.videoId,
-      );
-
-      if (isAlreadyLiked) {
-        // ❌ Remove from liked
-        final toRemove =
-            liked.videos.where((v) => v.videoId == video.videoId).toList();
-        liked.videos.removeAll(toRemove);
-        await liked.videos.save();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('💔 Removed from Liked'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      } else {
-        // ✅ Add to liked
-        liked.videos.add(video);
-        await liked.videos.save();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('❤️ Added to Liked'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
     });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Video "${video.title ?? videoId}" created')),
+    );
   }
 
-  Future<bool> isInLikedPlaylist(String videoId) async {
+  // Update existing video with snackbar
+  Future<void> updateVideo(
+    Video existing,
+    Map<String, dynamic>? data,
+    BuildContext context,
+  ) async {
+    final isar = await this.isar;
+
+    existing.lastWatched = DateTime.now();
+
+    // Update all fields if present and valid in data
+    if (data != null) {
+      if (data['watchedDuration'] != null) {
+        existing.watchedDuration = data['watchedDuration'] as int;
+      }
+      if (data['totalDuration'] != null) {
+        existing.totalDuration = data['totalDuration'] as int;
+      }
+      if (data['isWatched'] != null) {
+        existing.isWatched = data['isWatched'] as bool;
+      }
+      if (data['title'] != null && (data['title'] as String).isNotEmpty) {
+        existing.title = data['title'] as String;
+      }
+      if (data['channelTitle'] != null &&
+          (data['channelTitle'] as String).isNotEmpty) {
+        existing.channelTitle = data['channelTitle'] as String;
+      }
+
+      // Update thumbnailBytes if a valid URL is provided
+      final thumbUrl =
+          (data['thumbnails']?['high']?['url'] ??
+                  data['thumbnails']?['medium']?['url'] ??
+                  data['thumbnails']?['default']?['url'])
+              as String?;
+
+      if (thumbUrl != null && thumbUrl.isNotEmpty) {
+        existing.thumbnailBytes = await fetchThumbnailBytes(thumbUrl);
+      }
+    }
+
+    await isar.writeTxn(() async {
+      await isar.videos.put(existing);
+    });
+
+    print("updated");
+  }
+
+  // Combined create or update with snackbar
+  Future<Video> createOrUpdateVideo(
+    String videoId,
+    Map<String, dynamic>? data,
+    BuildContext context,
+  ) async {
+    final isar = await this.isar;
+
+    final existing =
+        await isar.videos.filter().videoIdEqualTo(videoId).findFirst();
+
+    if (existing != null) {
+      await updateVideo(existing, data, context);
+      return existing;
+    } else {
+      await createVideo(videoId, data, context);
+      final newVideo =
+          await isar.videos.filter().videoIdEqualTo(videoId).findFirst();
+      return newVideo!;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getHistoryVideosMinimal() async {
+    try {
+      final isar = await this.isar;
+
+      final sortedVideos =
+          await isar.videos
+              .filter()
+              .watchedDurationGreaterThan(0)
+              .sortByLastWatchedDesc()
+              .findAll();
+
+      return sortedVideos.map((video) {
+        return {
+          'videoId': video.videoId,
+          'title': video.title ?? '',
+          'thumbnailBytes': video.thumbnailBytes ?? Uint8List(0),
+          'channelTitle': video.channelTitle ?? '',
+        };
+      }).toList();
+    } catch (e, st) {
+      print('Error fetching history videos: $e\n$st');
+      return [];
+    }
+  }
+
+  // --------------------------------------
+  // --------- LIKED PLAYLIST -------------
+  // --------------------------------------
+
+  Future<void> toggleLiked(
+    String videoId,
+    Map<String, dynamic>? data,
+    BuildContext context,
+  ) async {
     final isar = await this.isar;
 
     final liked =
-        await isar.playlists
-            .filter()
-            .typeEqualTo(PlaylistType.liked)
-            .findFirst();
-
-    if (liked == null) return false;
-
-    await liked.videos.load();
-
-    return liked.videos.any((video) => video.videoId == videoId);
-  }
-
-  Future<void> printLikedPlaylistVideos() async {
-    final isar = await this.isar;
-
-    // Get the 'Liked' playlist
-    final liked =
-        await isar.playlists
-            .filter()
-            .typeEqualTo(PlaylistType.liked)
-            .findFirst();
+        await isar.playlists.filter().playlistNameEqualTo("Liked").findFirst();
 
     if (liked == null) {
-      print('No "Liked" playlist found.');
+      print("Liked playlist does not exist!!!");
       return;
     }
 
+    Video? video =
+        await isar.videos.filter().videoIdEqualTo(videoId).findFirst();
+
+    if (video == null) {
+      video = await convertMapStringDynamictoVideo(videoId, data);
+
+      await createOrUpdateVideo(videoId, data, context);
+    }
+
+    // Load linked videos
     await liked.videos.load();
 
-    if (liked.videos.isEmpty) {
-      print('"Liked" playlist is empty.');
-    } else {
-      print('Videos in "Liked" playlist:');
-      for (var video in liked.videos) {
-        print(' - ${video.title ?? video.videoId}');
+    // Check if video already exists in the liked playlist
+    final doesExist = await isLiked(videoId);
+
+    await isar.writeTxn(() async {
+      if (doesExist) {
+        // Find the exact video instance in the link and remove it
+        final existingVideo = liked.videos.firstWhere(
+          (v) => v.videoId == video?.videoId,
+        );
+        liked.videos.remove(existingVideo);
+      } else {
+        liked.videos.add(video!);
       }
+      await liked.videos.save();
+    });
+  }
+
+  Future<bool> isLiked(String videoId) async {
+    final isar = await this.isar;
+
+    final liked =
+        await isar.playlists.filter().playlistNameEqualTo("Liked").findFirst();
+
+    if (liked == null) {
+      print("Liked does not exist!!!");
+      return false;
     }
+
+    await liked.videos.load();
+
+    final doesExist = liked.videos.toList().any(
+      (video) => video.videoId == videoId,
+    );
+
+    return doesExist;
+  }
+
+  Future<List<Map<String, dynamic>>> getLikedVideosMinimal() async {
+    final isar = await this.isar;
+
+    final liked =
+        await isar.playlists.filter().playlistNameEqualTo("Liked").findFirst();
+
+    if (liked == null) {
+      return [{}];
+    }
+
+    await liked.videos.load();
+
+    final likedVideos =
+        await liked.videos.map((video) {
+          return {
+            'videoId': video.videoId,
+            'title': video.title,
+            'thumbnailBytes': video.title,
+            'channelTitle': video.channelTitle,
+          };
+        }).toList();
+
+    return likedVideos;
+  }
+
+  // --------------------------------------
+  // ------ WATCH LATER PLAYLIST ----------
+  // --------------------------------------
+
+  Future<void> toggleWatchLater(
+    String videoId,
+    Map<String, dynamic>? data,
+    BuildContext context,
+  ) async {
+    final isar = await this.isar;
+
+    final watchLater =
+        await isar.playlists
+            .filter()
+            .playlistNameEqualTo("Watch Later")
+            .findFirst();
+
+    if (watchLater == null) {
+      print("Watch Later playlist does not exist!!!");
+      return;
+    }
+
+    Video? video =
+        await isar.videos.filter().videoIdEqualTo(videoId).findFirst();
+
+    if (video == null) {
+      video = await convertMapStringDynamictoVideo(videoId, data);
+
+      await createOrUpdateVideo(videoId, data, context);
+    }
+
+    // Load linked videos
+    await watchLater.videos.load();
+
+    // Check if video already exists in the watch later playlist
+    final doesExist = await isWatchLater(videoId);
+
+    await isar.writeTxn(() async {
+      if (doesExist) {
+        // Find the exact video instance in the link and remove it
+        final existingVideo = watchLater.videos.firstWhere(
+          (v) => v.videoId == video?.videoId,
+        );
+        watchLater.videos.remove(existingVideo);
+      } else {
+        watchLater.videos.add(video!);
+      }
+      await watchLater.videos.save();
+    });
+  }
+
+  Future<bool> isWatchLater(String videoId) async {
+    final isar = await this.isar;
+
+    final watchLater =
+        await isar.playlists
+            .filter()
+            .playlistNameEqualTo("Watch Later")
+            .findFirst();
+
+    if (watchLater == null) {
+      print("Watch Later does not exist!!!");
+      return false;
+    }
+
+    await watchLater.videos.load();
+
+    final doesExist = watchLater.videos.toList().any(
+      (video) => video.videoId == videoId,
+    );
+
+    return doesExist;
+  }
+
+  Future<List<Map<String, dynamic>>> getWatchLaterVideosMinimal() async {
+    final isar = await this.isar;
+
+    final watchLater =
+        await isar.playlists
+            .filter()
+            .playlistNameEqualTo("Watch Later")
+            .findFirst();
+
+    if (watchLater == null) {
+      return [];
+    }
+
+    await watchLater.videos.load();
+
+    final watchLaterVideos =
+        watchLater.videos.map((video) {
+          return {
+            'videoId': video.videoId,
+            'title': video.title,
+            'thumbnailBytes': video.thumbnailBytes,
+            'channelTitle': video.channelTitle,
+          };
+        }).toList();
+
+    return watchLaterVideos;
   }
 }

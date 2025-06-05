@@ -51,9 +51,12 @@ class _SigninState extends State<Signin> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(EvaIcons.google),
+                    Icon(EvaIcons.google, color: Colors.black),
                     SizedBox(width: 5),
-                    Text("Sign in with Google"),
+                    Text(
+                      "Sign in with Google",
+                      style: TextStyle(color: Colors.black),
+                    ),
                   ],
                 ),
               ),
@@ -67,9 +70,12 @@ class _SigninState extends State<Signin> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(FontAwesomeIcons.apple),
+                    Icon(FontAwesomeIcons.apple, color: Colors.black),
                     SizedBox(width: 5),
-                    Text("Sign in with Apple"),
+                    Text(
+                      "Sign in with Apple",
+                      style: TextStyle(color: Colors.black),
+                    ),
                   ],
                 ),
               ),

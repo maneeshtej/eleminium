@@ -1,8 +1,8 @@
 import 'package:course_app/Screens/HomeScreens/account.dart';
 import 'package:course_app/Screens/HomeScreens/featured.dart';
-import 'package:course_app/Screens/HomeScreens/myCourses.dart';
+import 'package:course_app/Screens/HomeScreens/library.dart';
 import 'package:course_app/Screens/HomeScreens/Search.dart';
-import 'package:course_app/Screens/HomeScreens/Wishlist.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Homescreen extends StatefulWidget {
@@ -35,7 +35,7 @@ class _HomescreenState extends State<Homescreen> {
           });
         },
         controller: pageController,
-        children: [Featured(), Search(), Mycourses(), Wishlist(), Account()],
+        children: [Featured(), Search(), Library(), Account()],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
@@ -55,14 +55,7 @@ class _HomescreenState extends State<Homescreen> {
           BottomNavigationBarItem(icon: Icon(Icons.star), label: "Featured"),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: "Search"),
 
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "My Courses",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.monitor_heart_outlined),
-            label: "Wishlist",
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Library"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Account"),
         ],
       ),

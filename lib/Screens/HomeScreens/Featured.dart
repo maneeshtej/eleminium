@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Featured extends StatefulWidget {
@@ -8,6 +9,7 @@ class Featured extends StatefulWidget {
 }
 
 class _FeaturedState extends State<Featured> {
+  final user = FirebaseAuth.instance.currentUser;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,7 +27,7 @@ class _FeaturedState extends State<Featured> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Hello Tej",
+                        "Hello ${user?.displayName?.split(' ')[0] ?? 'user'}",
                         style: TextStyle(
                           fontSize: 35,
                           fontWeight: FontWeight.w600,
@@ -43,7 +45,6 @@ class _FeaturedState extends State<Featured> {
                       ),
                     ],
                   ),
-                  const CircleAvatar(),
                 ],
               ),
               const SizedBox(height: 30),

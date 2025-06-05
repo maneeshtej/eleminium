@@ -1,7 +1,10 @@
 import 'package:course_app/Screens/landingPage.dart';
 import 'package:course_app/Services/Auth.dart';
 import 'package:eva_icons_flutter/eva_icons_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/route_manager.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:page_transition/page_transition.dart';
 
 class Account extends StatefulWidget {
@@ -13,6 +16,19 @@ class Account extends StatefulWidget {
 
 class _AccountState extends State<Account> {
   Auth auth = Auth();
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final user = FirebaseAuth.instance.currentUser;
+
+  Future<void> signOut() async {
+    try {
+      await _googleSignIn.signOut(); // Sign out from Google
+      await _firebaseAuth.signOut(); // Sign out from Firebase
+      print("[DEBUG] User signed out successfully.");
+    } catch (e) {
+      print("[ERROR] Sign-out failed: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +64,7 @@ class _AccountState extends State<Account> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Maneesh",
+                      user?.displayName ?? 'User',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 30,
@@ -62,7 +78,7 @@ class _AccountState extends State<Account> {
                       children: [
                         Icon(EvaIcons.google, color: Colors.white, size: 15),
                         Text(
-                          "soldoutsoul658@gmail.com",
+                          user?.email ?? 'unknown',
                           style: TextStyle(color: Colors.white),
                         ),
                       ],
@@ -157,15 +173,8 @@ class _AccountState extends State<Account> {
               child: Center(
                 child: TextButton(
                   onPressed: () async {
-                    auth.signOut().whenComplete(() {
-                      Navigator.pushReplacement(
-                        context,
-                        PageTransition(
-                          type: PageTransitionType.bottomToTop,
-                          child: Landingpage(),
-                        ),
-                      );
-                    });
+                    await signOut();
+                    Get.offAll(() => Landingpage());
                   },
                   child: Text(
                     "Log Out",

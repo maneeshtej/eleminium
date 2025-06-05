@@ -48,7 +48,7 @@ class _LandingpageState extends State<Landingpage> {
             _currentPage = page;
           });
         },
-        children: [SignUp(), Signin()],
+        children: [Signin(), SignUp()],
       ),
       bottomNavigationBar: BottomAppBar(
         color: Colors.grey.shade900,
@@ -63,7 +63,7 @@ class _LandingpageState extends State<Landingpage> {
               child: Row(
                 children: [
                   Text(
-                    _currentPage == 0 ? "Sign In" : "Sign Up",
+                    _currentPage == 0 ? "Sign Up" : "Sign In",
                     style: TextStyle(color: Colors.grey.shade400),
                   ),
                   SizedBox(width: 3),

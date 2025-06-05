@@ -1,9 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Auth {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
 
   Future<String> googleSignIn() async {
     try {
@@ -39,11 +41,12 @@ class Auth {
         return "no user";
       }
 
-      print("[DEBUG] Firebase Sign-In successful.");
-      print("[DEBUG] UID: ${user.uid}");
-      print("[DEBUG] Name: ${user.displayName}");
-      print("[DEBUG] Email: ${user.email}");
-      print("[DEBUG] Photo URL: ${user.photoURL}");
+      await _firebaseFirestore.collection('users').doc(user.uid).set({
+        'name': user.displayName,
+        'email': user.email,
+        'photoURL': user.photoURL,
+        'lastSignIn': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
 
       return "success";
     } catch (e, stack) {
