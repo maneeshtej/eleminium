@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:page_transition/page_transition.dart';
 
 class Account extends StatefulWidget {
   const Account({super.key});

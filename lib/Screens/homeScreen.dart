@@ -2,7 +2,6 @@ import 'package:course_app/Screens/HomeScreens/account.dart';
 import 'package:course_app/Screens/HomeScreens/featured.dart';
 import 'package:course_app/Screens/HomeScreens/library.dart';
 import 'package:course_app/Screens/HomeScreens/Search.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Homescreen extends StatefulWidget {

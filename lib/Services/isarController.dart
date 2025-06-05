@@ -78,12 +78,12 @@ class Isarcontroller extends GetxController {
           ..totalDuration = 0
           ..lastWatched = DateTime.now()
           ..isWatched = false
-          ..title = data?['title']
-          ..channelTitle = data?['channelTitle']
+          ..title = data['title']
+          ..channelTitle = data['channelTitle']
           ..thumbnailBytes = await fetchThumbnailBytes(
-            data?['thumbnails']?['high']?['url'] ??
-                data?['thumbnails']?['medium']?['url'] ??
-                data?['thumbnails']?['default']?['url'],
+            data['thumbnails']?['high']?['url'] ??
+                data['thumbnails']?['medium']?['url'] ??
+                data['thumbnails']?['default']?['url'],
           );
 
     return video;
