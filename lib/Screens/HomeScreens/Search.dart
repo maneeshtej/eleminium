@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:course_app/Screens/InfoScreens/videoDetails.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:course_app/Services/DataController.dart';
@@ -20,10 +22,13 @@ class _SearchState extends State<Search> {
 
   List<Map<String, String>> _results = [];
   bool _isLoading = false;
+  List<String> _history = [];
 
   void _search() async {
     String query = _controller.text.trim();
     if (query.isEmpty) return;
+
+    _saveSearchQuery(query);
 
     setState(() {
       _isLoading = true;
@@ -35,6 +40,38 @@ class _SearchState extends State<Search> {
       _results = data['results'];
       _nextPageToken = data['nextPageToken'];
       _isLoading = false;
+    });
+  }
+
+  void _saveSearchQuery(String query) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final firestore = FirebaseFirestore.instance;
+    await firestore
+        .collection('users')
+        .doc(uid)
+        .collection('searchHistory')
+        .add({'query': query, 'timestamp': FieldValue.serverTimestamp()});
+  }
+
+  void _fetchSearchQueries() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final firestore = FirebaseFirestore.instance;
+
+    final snapshot =
+        await firestore
+            .collection('users')
+            .doc(uid)
+            .collection('searchHistory')
+            .orderBy('timestamp', descending: true)
+            .limit(10)
+            .get();
+
+    setState(() {
+      _history = snapshot.docs.map((doc) => doc['query'] as String).toList();
     });
   }
 
@@ -82,6 +119,7 @@ class _SearchState extends State<Search> {
         _loadMore();
       }
     });
+    _fetchSearchQueries();
   }
 
   @override
@@ -94,7 +132,7 @@ class _SearchState extends State<Search> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Optional dark theme
+      backgroundColor: Colors.black,
       body: Padding(
         padding: const EdgeInsets.only(left: 20, right: 20, top: 50),
         child: Column(
@@ -118,7 +156,7 @@ class _SearchState extends State<Search> {
                 color: Colors.grey.shade400,
               ),
             ),
-            const SizedBox(height: 30),
+            SizedBox(height: 30),
 
             // Search Bar
             Container(
@@ -154,13 +192,41 @@ class _SearchState extends State<Search> {
               ),
             ),
 
-            const SizedBox(height: 00),
+            SizedBox(height: 20),
 
-            // Results Section
+            // Main Content
             if (_isLoading)
               Expanded(child: Center(child: CircularProgressIndicator()))
             else if (_results.isEmpty)
-              Text("No results yet.", style: TextStyle(color: Colors.white70))
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_history.isNotEmpty) ...[
+                    SizedBox(
+                      height: 400,
+                      child: ListView.separated(
+                        itemCount: _history.length,
+                        separatorBuilder:
+                            (_, __) => Divider(color: Colors.grey),
+                        itemBuilder: (context, index) {
+                          final recentQuery = _history[index];
+                          return ListTile(
+                            title: Text(
+                              recentQuery,
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            onTap: () {
+                              _controller.text = recentQuery;
+                              _search();
+                            },
+                            trailing: Icon(Icons.history, color: Colors.grey),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ],
+              )
             else
               Expanded(
                 child: RefreshIndicator(
@@ -181,11 +247,7 @@ class _SearchState extends State<Search> {
                           color: Colors.black,
                           margin: EdgeInsets.symmetric(vertical: 8),
                           child: ListTile(
-                            contentPadding: EdgeInsets.only(
-                              top: 00,
-                              bottom: 0,
-                              left: 5,
-                            ),
+                            contentPadding: EdgeInsets.only(left: 5),
                             leading: Image.network(
                               video['thumbnail']!,
                               width: 100,
