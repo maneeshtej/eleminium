@@ -5,10 +5,8 @@ import 'package:course_app/Screens/InfoScreens/questionDetails.dart';
 import 'package:course_app/Screens/InfoScreens/videoFullscreen.dart';
 import 'package:course_app/Services/DataController.dart';
 import 'package:course_app/Services/isarController.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/instance_manager.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class VideoDetails extends StatefulWidget {
@@ -54,10 +52,6 @@ class _VideoDetailsState extends State<VideoDetails> {
         _saveProgress();
       }
     });
-  }
-
-  void _handleDragEnd() {
-    if (_dragDistance > 100) {}
   }
 
   Future<void> _checkLikedAndWatchLaterAndPlaylists() async {
@@ -144,25 +138,6 @@ class _VideoDetailsState extends State<VideoDetails> {
     };
 
     await _isarController.createOrUpdateVideo(widget.videoId, data);
-  }
-
-  final TextEditingController _questionController = TextEditingController();
-
-  void _submitQuestion(String videoId) {
-    final text = _questionController.text.trim();
-    if (text.isEmpty) return;
-
-    FirebaseFirestore.instance
-        .collection('videos')
-        .doc(videoId)
-        .collection('questions')
-        .add({
-          'question': text,
-          'timestamp': Timestamp.now(),
-          'username': FirebaseAuth.instance.currentUser?.displayName,
-        });
-
-    _questionController.clear();
   }
 
   @override
@@ -266,8 +241,9 @@ class _VideoDetailsState extends State<VideoDetails> {
                     FutureBuilder(
                       future: _isarController.isar,
                       builder: (context, snapshot) {
-                        if (!snapshot.hasData || _videoData == null)
+                        if (!snapshot.hasData || _videoData == null) {
                           return SizedBox.shrink();
+                        }
 
                         final total =
                             (_videoData?['totalDuration'] ?? 1).toDouble();
