@@ -26,6 +26,7 @@ class _MycoursesState extends State<Library> {
   void initState() {
     super.initState();
     // Run after the first frame to avoid blocking
+
     _loadHistoryVideos();
     _loadPlaylists();
   }
@@ -34,6 +35,7 @@ class _MycoursesState extends State<Library> {
     final historyVideos = await _isarController.getHistoryVideosMinimal();
 
     setState(() {
+      if (!mounted) return;
       _historyVideos = historyVideos;
     });
   }
@@ -42,6 +44,7 @@ class _MycoursesState extends State<Library> {
     final playlists = await _isarController.getAllPlaylists();
 
     setState(() {
+      if (!mounted) return;
       _playLists = playlists;
     });
   }

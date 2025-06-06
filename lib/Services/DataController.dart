@@ -55,7 +55,7 @@ class Datacontroller extends GetxController {
     for (var item in detailsData['items']) {
       final id = item['id'];
       final durationStr = item['contentDetails']['duration'];
-      final durationSeconds = _parseDuration(durationStr);
+      final durationSeconds = _parseDuration(durationStr ?? '0');
 
       if (durationSeconds >= 60) {
         final snippet = videoSnippets[id];

@@ -95,7 +95,7 @@ class _SearchState extends State<Search> {
             .doc(uid)
             .collection('searchHistory')
             .orderBy('timestamp', descending: true)
-            .limit(10)
+            .limit(20)
             .get();
 
     if (!mounted) return;
@@ -211,6 +211,15 @@ class _SearchState extends State<Search> {
                   children: [
                     Expanded(
                       child: TextField(
+                        onChanged: (value) {
+                          if (value.isEmpty) {
+                            setState(() {
+                              _results.clear();
+                              _nextPageToken = null;
+                              _isLoading = false;
+                            });
+                          }
+                        },
                         controller: _controller,
                         onSubmitted: (_) => _search(),
                         decoration: InputDecoration(
