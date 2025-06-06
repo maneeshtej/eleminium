@@ -124,10 +124,10 @@ class _AddPlaylistPageState extends State<AddPlaylistPage> {
                           final playlist = _playlistList[index];
                           return ListTile(
                             title: Text(
-                              playlist.playlistName ?? "Unnamed",
+                              playlist.playlistName,
                               style: const TextStyle(color: Colors.white),
                             ),
-                            onTap: () => _handleTap(playlist.playlistName!),
+                            onTap: () => _handleTap(playlist.playlistName),
                           );
                         },
                       ),

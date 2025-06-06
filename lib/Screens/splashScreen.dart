@@ -3,7 +3,6 @@ import 'package:course_app/Screens/homeScreen.dart';
 import 'package:course_app/Screens/landingPage.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
-import 'dart:async';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
