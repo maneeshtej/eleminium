@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:course_app/Screens/Helpers/addPlaylistPage.dart';
 import 'package:course_app/Screens/InfoScreens/questionDetails.dart';
+import 'package:course_app/Screens/InfoScreens/videoFullscreen.dart';
 import 'package:course_app/Services/DataController.dart';
 import 'package:course_app/Services/isarController.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/instance_manager.dart';
@@ -24,6 +26,8 @@ class _VideoDetailsState extends State<VideoDetails> {
   Timer? _progressTimer;
   bool isLiked = false;
   bool isWatcherLater = false;
+  double _dragStartY = 0;
+  double _dragDistance = 0;
 
   Map<String, dynamic>? _videoData;
 
@@ -50,6 +54,10 @@ class _VideoDetailsState extends State<VideoDetails> {
         _saveProgress();
       }
     });
+  }
+
+  void _handleDragEnd() {
+    if (_dragDistance > 100) {}
   }
 
   Future<void> _checkLikedAndWatchLaterAndPlaylists() async {
@@ -138,6 +146,25 @@ class _VideoDetailsState extends State<VideoDetails> {
     await _isarController.createOrUpdateVideo(widget.videoId, data);
   }
 
+  final TextEditingController _questionController = TextEditingController();
+
+  void _submitQuestion(String videoId) {
+    final text = _questionController.text.trim();
+    if (text.isEmpty) return;
+
+    FirebaseFirestore.instance
+        .collection('videos')
+        .doc(videoId)
+        .collection('questions')
+        .add({
+          'question': text,
+          'timestamp': Timestamp.now(),
+          'username': FirebaseAuth.instance.currentUser?.displayName,
+        });
+
+    _questionController.clear();
+  }
+
   @override
   void dispose() {
     _saveProgress(); // Final save
@@ -166,11 +193,73 @@ class _VideoDetailsState extends State<VideoDetails> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      height: 200,
-                      child: YoutubePlayer(
-                        controller: _youtubePlayerController,
-                        showVideoProgressIndicator: true,
+                    GestureDetector(
+                      onVerticalDragStart: (details) {
+                        _dragStartY = details.globalPosition.dy;
+                      },
+                      onVerticalDragUpdate: (details) {
+                        _dragDistance = _dragStartY - details.globalPosition.dy;
+                      },
+                      onVerticalDragEnd: (_) {
+                        if (_dragDistance > 20) {
+                          Get.to(
+                            FullscreenVideoPage(
+                              controller: _youtubePlayerController,
+                            ),
+                          );
+                        }
+                      },
+                      child: SizedBox(
+                        height: 230,
+                        child: YoutubePlayer(
+                          controller: _youtubePlayerController,
+                          showVideoProgressIndicator: true,
+                          bottomActions: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.replay_10,
+                                color: Colors.white,
+                              ),
+                              onPressed: () {
+                                final pos =
+                                    _youtubePlayerController.value.position;
+                                _youtubePlayerController.seekTo(
+                                  pos - const Duration(seconds: 10),
+                                );
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.forward_10,
+                                color: Colors.white,
+                              ),
+                              onPressed: () {
+                                final pos =
+                                    _youtubePlayerController.value.position;
+                                _youtubePlayerController.seekTo(
+                                  pos + const Duration(seconds: 10),
+                                );
+                              },
+                            ),
+                            CurrentPosition(),
+                            ProgressBar(isExpanded: true),
+
+                            // RemainingDuration(),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.fullscreen,
+                                color: Colors.white,
+                              ),
+                              onPressed: () {
+                                Get.to(
+                                  () => FullscreenVideoPage(
+                                    controller: _youtubePlayerController,
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 
