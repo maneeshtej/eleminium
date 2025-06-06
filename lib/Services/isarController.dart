@@ -105,11 +105,7 @@ class Isarcontroller extends GetxController {
   // -------------- VIDEOS ----------------
   // --------------------------------------
 
-  Future<void> createVideo(
-    String videoId,
-    Map<String, dynamic>? data,
-    BuildContext context,
-  ) async {
+  Future<void> createVideo(String videoId, Map<String, dynamic>? data) async {
     final isar = await this.isar;
 
     final video = await convertMapStringDynamictoVideo(videoId, data);
@@ -117,18 +113,10 @@ class Isarcontroller extends GetxController {
     await isar.writeTxn(() async {
       await isar.videos.put(video);
     });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Video "${video.title ?? videoId}" created')),
-    );
   }
 
   // Update existing video with snackbar
-  Future<void> updateVideo(
-    Video existing,
-    Map<String, dynamic>? data,
-    BuildContext context,
-  ) async {
+  Future<void> updateVideo(Video existing, Map<String, dynamic>? data) async {
     final isar = await this.isar;
 
     existing.lastWatched = DateTime.now();
@@ -175,7 +163,6 @@ class Isarcontroller extends GetxController {
   Future<Video> createOrUpdateVideo(
     String videoId,
     Map<String, dynamic>? data,
-    BuildContext context,
   ) async {
     final isar = await this.isar;
 
@@ -183,10 +170,10 @@ class Isarcontroller extends GetxController {
         await isar.videos.filter().videoIdEqualTo(videoId).findFirst();
 
     if (existing != null) {
-      await updateVideo(existing, data, context);
+      await updateVideo(existing, data);
       return existing;
     } else {
-      await createVideo(videoId, data, context);
+      await createVideo(videoId, data);
       final newVideo =
           await isar.videos.filter().videoIdEqualTo(videoId).findFirst();
       return newVideo!;
@@ -243,7 +230,7 @@ class Isarcontroller extends GetxController {
     if (video == null) {
       video = await convertMapStringDynamictoVideo(videoId, data);
 
-      await createOrUpdateVideo(videoId, data, context);
+      await createOrUpdateVideo(videoId, data);
     }
 
     // Load linked videos
@@ -339,7 +326,7 @@ class Isarcontroller extends GetxController {
     if (video == null) {
       video = await convertMapStringDynamictoVideo(videoId, data);
 
-      await createOrUpdateVideo(videoId, data, context);
+      await createOrUpdateVideo(videoId, data);
     }
 
     // Load linked videos
@@ -411,5 +398,91 @@ class Isarcontroller extends GetxController {
         }).toList();
 
     return watchLaterVideos;
+  }
+
+  // --------------------------------------
+  // --------- CUSTOM PLAYLIST ------------
+  // --------------------------------------
+
+  Future<void> createPlaylist(String name) async {
+    final isar = await this.isar;
+
+    final doesExist =
+        await isar.playlists.filter().playlistNameEqualTo(name).findFirst();
+
+    if (doesExist != null) {
+      return;
+    }
+
+    await isar.writeTxn(() async {
+      await isar.playlists.put(Playlist()..playlistName = name);
+    });
+  }
+
+  Future<void> deletePlaylist(String name) async {
+    final isar = await this.isar;
+
+    final doesExist =
+        await isar.playlists.filter().playlistNameEqualTo(name).findFirst();
+
+    if (doesExist != null) {
+      await isar.playlists.delete(doesExist.id);
+    }
+  }
+
+  Future<void> addToPlaylist(
+    String name,
+    String videoId,
+    Map<String, dynamic>? data,
+  ) async {
+    final isar = await this.isar;
+
+    final playlist =
+        await isar.playlists.filter().playlistNameEqualTo(name).findFirst();
+
+    if (playlist == null) return;
+
+    // Step 1: Write/update video to DB
+    await createOrUpdateVideo(videoId, data);
+
+    // Step 2: Get the video back with ID from the DB
+    final video =
+        await isar.videos.filter().videoIdEqualTo(videoId).findFirst();
+    if (video == null) return;
+
+    await isar.writeTxn(() async {
+      await playlist.videos.load();
+
+      final alreadyExists = playlist.videos.any(
+        (v) => v.videoId == video.videoId,
+      );
+      if (alreadyExists) return;
+
+      playlist.videos.add(video);
+      await playlist.videos.save();
+    });
+  }
+
+  Future<void> removeFromPlaylist(String videoId, String name) async {
+    final isar = await this.isar;
+
+    final playlist =
+        await isar.playlists.filter().playlistNameEqualTo(name).findFirst();
+
+    if (playlist == null) return;
+
+    await isar.writeTxn(() async {
+      await playlist.videos.load();
+
+      final videoToRemove =
+          playlist.videos
+              .where((v) => v.videoId == videoId)
+              .cast<Video?>()
+              .firstOrNull;
+
+      if (videoToRemove != null) {
+        await playlist.videos.remove(videoToRemove);
+      }
+    });
   }
 }

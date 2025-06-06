@@ -1,7 +1,11 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:course_app/Screens/Helpers/addPlaylistPage.dart';
+import 'package:course_app/Screens/InfoScreens/questionDetails.dart';
 import 'package:course_app/Services/DataController.dart';
 import 'package:course_app/Services/isarController.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:get/instance_manager.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -65,7 +69,6 @@ class _VideoDetailsState extends State<VideoDetails> {
     final updatedVideo = await _isarController.createOrUpdateVideo(
       videoId,
       data,
-      context,
     );
 
     setState(() {
@@ -88,6 +91,27 @@ class _VideoDetailsState extends State<VideoDetails> {
         _youtubePlayerController.pause();
       }
     });
+
+    await _createQuestionsSubcollection();
+  }
+
+  Future<void> _createQuestionsSubcollection() async {
+    final questionsRef = FirebaseFirestore.instance
+        .collection('videos')
+        .doc(widget.videoId)
+        .collection('questions');
+
+    final snapshot = await questionsRef.limit(1).get();
+
+    if (snapshot.docs.isEmpty) {
+      await questionsRef.add({
+        'question': "be the first one to ask the question",
+        'username': 'system',
+        'userId': 'system',
+        'timestamp': FieldValue.serverTimestamp(),
+        'isPlaceHolder': true,
+      });
+    }
   }
 
   Future<void> _saveProgress({
@@ -111,7 +135,7 @@ class _VideoDetailsState extends State<VideoDetails> {
         },
     };
 
-    await _isarController.createOrUpdateVideo(widget.videoId, data, context);
+    await _isarController.createOrUpdateVideo(widget.videoId, data);
   }
 
   @override
@@ -187,7 +211,14 @@ class _VideoDetailsState extends State<VideoDetails> {
                               spacing: 0,
                               children: [
                                 GestureDetector(
-                                  onTap: () {},
+                                  onTap: () {
+                                    Get.to(
+                                      AddPlaylistPage(
+                                        videoId: widget.videoId,
+                                        data: data,
+                                      ),
+                                    );
+                                  },
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
                                       horizontal: 20,
@@ -324,8 +355,47 @@ class _VideoDetailsState extends State<VideoDetails> {
                               ),
                             ),
                           ),
-
                           SizedBox(height: 50),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 8,
+                            ),
+                            child: GestureDetector(
+                              onTap: () {
+                                Get.to(
+                                  () => QuestionsPage(videoId: widget.videoId),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white10,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.white30),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: const [
+                                    Text(
+                                      "View Questions",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.arrow_forward_ios,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),

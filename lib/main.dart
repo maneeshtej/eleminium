@@ -15,6 +15,7 @@ void main() async {
   Get.put(Isarcontroller());
   // await Get.find<Isarcontroller>().ensureDefaultPlaylistsExist();
   await Get.find<Isarcontroller>().defaultPlaylistInitialize();
+
   runApp(const MyApp());
 }
 

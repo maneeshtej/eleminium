@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:course_app/Model/playlist.dart';
+import 'package:course_app/Screens/Helpers/addPlaylistPage.dart';
 import 'package:course_app/Screens/InfoScreens/playlistDetails.dart';
 import 'package:course_app/Screens/InfoScreens/videoDetails.dart';
 import 'package:flutter/material.dart';
@@ -189,7 +190,7 @@ class _MycoursesState extends State<Library> {
 
             SizedBox(height: 20),
             Row(
-              children: const [
+              children: [
                 Text(
                   "Playlists",
                   style: TextStyle(
@@ -199,7 +200,12 @@ class _MycoursesState extends State<Library> {
                   ),
                 ),
                 Expanded(child: SizedBox()),
-                Icon(Icons.add, color: Colors.white, size: 25),
+                IconButton(
+                  onPressed: () {
+                    Get.to(AddPlaylistPage());
+                  },
+                  icon: Icon(Icons.add, color: Colors.white, size: 25),
+                ),
                 SizedBox(width: 20),
               ],
             ),
@@ -273,12 +279,12 @@ class _MycoursesState extends State<Library> {
                 ),
               ),
 
-            MaterialButton(
-              onPressed: () async {
-                await clearAllVideos();
-              },
-              child: Text("Delete all"),
-            ),
+            // MaterialButton(
+            //   onPressed: () async {
+            //     await clearAllVideos();
+            //   },
+            //   child: Text("Delete all"),
+            // ),
           ],
         ),
       ),

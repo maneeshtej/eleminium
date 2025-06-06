@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:course_app/Screens/InfoScreens/videoDetails.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -25,17 +27,43 @@ class _SearchState extends State<Search> {
   List<String> _history = [];
 
   void _search() async {
-    String query = _controller.text.trim();
-    if (query.isEmpty) return;
+    String input = _controller.text.trim();
+    if (input.isEmpty) return;
 
-    _saveSearchQuery(query);
+    String? extractVideoId(String input) {
+      final uri = Uri.tryParse(input);
+      if (uri == null) return null;
+
+      // Example URLs:
+      // https://www.youtube.com/watch?v=VIDEOID
+      // https://youtu.be/VIDEOID
+
+      if (uri.host.contains('youtube.com')) {
+        return uri.queryParameters['v'];
+      } else if (uri.host == 'youtu.be') {
+        return uri.pathSegments.isNotEmpty ? uri.pathSegments[0] : null;
+      }
+      return null;
+    }
+
+    // Check if input is a YouTube URL and extract video ID
+    final videoId = extractVideoId(input);
+    if (videoId != null) {
+      // It's a video URL - go directly to VideoDetails page
+      FocusScope.of(context).unfocus(); // hide keyboard
+      Get.to(VideoDetails(videoId: videoId));
+      return;
+    }
+
+    // Not a URL, perform search
+    _saveSearchQuery(input);
 
     setState(() {
       _isLoading = true;
-      _lastQuery = query;
+      _lastQuery = input;
     });
 
-    final data = await _dataController.searchYoutube(query);
+    final data = await _dataController.searchYoutube(input);
     setState(() {
       _results = data['results'];
       _nextPageToken = data['nextPageToken'];
@@ -70,8 +98,16 @@ class _SearchState extends State<Search> {
             .limit(10)
             .get();
 
+    if (!mounted) return;
+
     setState(() {
-      _history = snapshot.docs.map((doc) => doc['query'] as String).toList();
+      final allQueries =
+          snapshot.docs.map((doc) => doc['query'] as String).toList();
+
+      // Use a LinkedHashSet to preserve order and remove duplicates
+      final uniqueQueries = LinkedHashSet<String>.from(allQueries).toList();
+
+      _history = uniqueQueries;
     });
   }
 
@@ -133,149 +169,155 @@ class _SearchState extends State<Search> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20, top: 50),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Text(
-              "Search",
-              style: TextStyle(
-                fontSize: 35,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              // Header
+              Text(
+                "Search",
+                style: TextStyle(
+                  fontSize: 35,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
-            ),
-            SizedBox(height: 5),
-            Text(
-              "Got any cookies?...",
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                color: Colors.grey.shade400,
+              const SizedBox(height: 5),
+              Text(
+                "Got any cookies?...",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.grey.shade400,
+                ),
               ),
-            ),
-            SizedBox(height: 30),
+              const SizedBox(height: 30),
 
-            // Search Bar
-            Container(
-              width: double.infinity,
-              height: 55,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      onSubmitted: (_) => _search(),
-                      decoration: InputDecoration(
-                        hintText: "Search YouTube or paste URL",
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: 13,
+              // Search Bar
+              Container(
+                width: double.infinity,
+                height: 55,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        onSubmitted: (_) => _search(),
+                        decoration: InputDecoration(
+                          hintText: "Search YouTube or paste URL",
+                          hintStyle: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 13,
+                          ),
+                          border: InputBorder.none,
                         ),
-                        border: InputBorder.none,
+                        style: TextStyle(color: Colors.grey.shade900),
                       ),
-                      style: TextStyle(color: Colors.grey.shade900),
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.search, color: Colors.black),
-                    onPressed: _search,
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(height: 20),
-
-            // Main Content
-            if (_isLoading)
-              Expanded(child: Center(child: CircularProgressIndicator()))
-            else if (_results.isEmpty)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (_history.isNotEmpty) ...[
-                    SizedBox(
-                      height: 400,
-                      child: ListView.separated(
-                        itemCount: _history.length,
-                        separatorBuilder:
-                            (_, __) => Divider(color: Colors.grey),
-                        itemBuilder: (context, index) {
-                          final recentQuery = _history[index];
-                          return ListTile(
-                            title: Text(
-                              recentQuery,
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            onTap: () {
-                              _controller.text = recentQuery;
-                              _search();
-                            },
-                            trailing: Icon(Icons.history, color: Colors.grey),
-                          );
-                        },
-                      ),
+                    IconButton(
+                      icon: Icon(Icons.search, color: Colors.black),
+                      onPressed: () {
+                        FocusScope.of(context).unfocus();
+                        _search();
+                      },
                     ),
                   ],
-                ],
-              )
-            else
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: _refresh,
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    itemCount: _results.length + (_isFetchingMore ? 1 : 0),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Main Content
+              if (_isLoading)
+                const Center(child: CircularProgressIndicator())
+              else if (_results.isEmpty)
+                if (_history.isNotEmpty)
+                  ListView.separated(
+                    physics: NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: _history.length,
+                    separatorBuilder: (_, __) => Divider(color: Colors.grey),
                     itemBuilder: (context, index) {
-                      if (index == _results.length) {
-                        return Center(child: CircularProgressIndicator());
-                      }
-                      final video = _results[index];
-                      return GestureDetector(
+                      final recentQuery = _history[index];
+                      return ListTile(
+                        title: Text(
+                          recentQuery,
+                          style: const TextStyle(color: Colors.white),
+                        ),
                         onTap: () {
-                          Get.to(VideoDetails(videoId: video['id']!));
+                          _controller.text = recentQuery;
+                          _search();
                         },
-                        child: Card(
-                          color: Colors.black,
-                          margin: EdgeInsets.symmetric(vertical: 8),
-                          child: ListTile(
-                            contentPadding: EdgeInsets.only(left: 5),
-                            leading: Image.network(
-                              video['thumbnail']!,
-                              width: 100,
-                              fit: BoxFit.cover,
-                            ),
-                            title: Text(
-                              video['title']!,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                        trailing: const Icon(Icons.history, color: Colors.grey),
+                      );
+                    },
+                  )
+                else
+                  const SizedBox.shrink()
+              else
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  child: RefreshIndicator(
+                    onRefresh: _refresh,
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      itemCount: _results.length + (_isFetchingMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == _results.length) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        final video = _results[index];
+                        return GestureDetector(
+                          onTap: () {
+                            FocusScope.of(context).unfocus();
+                            Get.to(VideoDetails(videoId: video['id']!));
+                          },
+                          child: Card(
+                            color: Colors.black,
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.only(left: 5),
+                              leading: Image.network(
+                                video['thumbnail']!,
+                                width: 100,
+                                fit: BoxFit.cover,
                               ),
-                            ),
-                            subtitle: Text(
-                              video['creator']!,
-                              style: TextStyle(
-                                color: Colors.grey.shade500,
-                                fontSize: 10,
+                              title: Text(
+                                video['title']!,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              subtitle: Text(
+                                video['creator']!,
+                                style: TextStyle(
+                                  color: Colors.grey.shade500,
+                                  fontSize: 10,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

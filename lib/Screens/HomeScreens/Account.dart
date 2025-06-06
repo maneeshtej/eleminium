@@ -44,153 +44,55 @@ class _AccountState extends State<Account> {
             fontWeight: FontWeight.w400,
           ),
         ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.shopping_cart_outlined, color: Colors.white),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Container(
+              color: Colors.grey.shade900,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    user?.displayName ?? 'User',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 5,
+                    children: [
+                      Icon(EvaIcons.google, color: Colors.white, size: 15),
+                      Text(
+                        user?.email ?? 'unknown',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 100,
+            child: Center(
+              child: TextButton(
+                onPressed: () async {
+                  await signOut();
+                  Get.offAll(() => Landingpage());
+                },
+                child: Text(
+                  "Log Out",
+                  style: TextStyle(color: Colors.blue.shade800),
+                ),
+              ),
+            ),
           ),
         ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(
-              height: 300,
-              width: 400,
-              child: Container(
-                color: Colors.grey.shade900,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      user?.displayName ?? 'User',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: 5,
-                      children: [
-                        Icon(EvaIcons.google, color: Colors.white, size: 15),
-                        Text(
-                          user?.email ?? 'unknown',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.only(top: 20, left: 20),
-              width: double.infinity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Headline",
-                    style: TextStyle(color: Colors.grey.shade500),
-                  ),
-                  ListTile(
-                    trailing: Icon(Icons.arrow_forward, color: Colors.white),
-                    title: Text(
-                      "Setting",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  ListTile(
-                    trailing: Icon(Icons.arrow_forward, color: Colors.white),
-                    title: Text(
-                      "Setting",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.only(top: 20, left: 20),
-              width: double.infinity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Headline",
-                    style: TextStyle(color: Colors.grey.shade500),
-                  ),
-                  ListTile(
-                    trailing: Icon(Icons.arrow_forward, color: Colors.white),
-                    title: Text(
-                      "Setting",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  ListTile(
-                    trailing: Icon(Icons.arrow_forward, color: Colors.white),
-                    title: Text(
-                      "Setting",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.only(top: 20, left: 20),
-              width: double.infinity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Headline",
-                    style: TextStyle(color: Colors.grey.shade500),
-                  ),
-                  ListTile(
-                    trailing: Icon(Icons.arrow_forward, color: Colors.white),
-                    title: Text(
-                      "Setting",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  ListTile(
-                    trailing: Icon(Icons.arrow_forward, color: Colors.white),
-                    title: Text(
-                      "Setting",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 100,
-              child: Center(
-                child: TextButton(
-                  onPressed: () async {
-                    await signOut();
-                    Get.offAll(() => Landingpage());
-                  },
-                  child: Text(
-                    "Log Out",
-                    style: TextStyle(color: Colors.blue.shade800),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                "v1.4",
-                style: TextStyle(color: Colors.grey.shade500),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
