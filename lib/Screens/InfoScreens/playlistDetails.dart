@@ -178,6 +178,47 @@ class _PlaylistDetailsPageState extends State<PlaylistDetailsPage> {
                               ],
                             ),
                           ),
+                          // Delete icon button
+                          IconButton(
+                            icon: const Icon(
+                              Icons.delete,
+                              color: Colors.redAccent,
+                            ),
+                            onPressed: () async {
+                              final confirm = await Get.dialog<bool>(
+                                AlertDialog(
+                                  title: const Text("Remove Video?"),
+                                  content: const Text(
+                                    "Are you sure you want to remove this video from the playlist?",
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Get.back(result: false),
+                                      child: const Text("Cancel"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Get.back(result: true),
+                                      child: const Text("Remove"),
+                                    ),
+                                  ],
+                                ),
+                              );
+
+                              if (confirm == true) {
+                                await _isarController.removeFromPlaylist(
+                                  video.videoId,
+                                  widget.playlist.playlistName,
+                                );
+                                await widget.playlist.videos.load();
+                                setState(() {});
+                                Get.snackbar(
+                                  "Removed",
+                                  "Video removed from playlist",
+                                  snackPosition: SnackPosition.BOTTOM,
+                                );
+                              }
+                            },
+                          ),
                         ],
                       ),
                     ),

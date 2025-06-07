@@ -77,6 +77,8 @@ class _VideoDetailsState extends State<VideoDetails> {
       data,
     );
 
+    if (!mounted) return;
+
     setState(() {
       _videoData = {
         ...?data,

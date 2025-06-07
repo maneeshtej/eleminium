@@ -29,6 +29,42 @@ class _QuestionAndAnswersPageState extends State<QuestionAndAnswersPage> {
   final TextEditingController _answerController = TextEditingController();
   bool _isSubmitting = false;
 
+  final TextEditingController _questionController = TextEditingController();
+  bool _isSubmittingQuestion = false;
+
+  Future<void> _submitQuestion() async {
+    final questionText = _questionController.text.trim();
+    if (questionText.isEmpty) return;
+
+    setState(() => _isSubmittingQuestion = true);
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('videos')
+          .doc(widget.videoId)
+          .collection('questions')
+          .add({
+            'question': questionText,
+            'userId': FirebaseAuth.instance.currentUser?.uid,
+            'username':
+                FirebaseAuth.instance.currentUser?.displayName ?? 'Anonymous',
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+
+      _questionController.clear();
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to submit question');
+    }
+
+    setState(() => _isSubmittingQuestion = false);
+  }
+
+  @override
+  void dispose() {
+    _questionController.dispose();
+    super.dispose();
+  }
+
   Future<void> _submitAnswer() async {
     final text = _answerController.text.trim();
     if (text.isEmpty) return;
@@ -63,7 +99,6 @@ class _QuestionAndAnswersPageState extends State<QuestionAndAnswersPage> {
   @override
   Widget build(BuildContext context) {
     if (widget.questionId == null) {
-      // Show ALL questions list
       final questionsRef = FirebaseFirestore.instance
           .collection('videos')
           .doc(widget.videoId)
@@ -76,48 +111,104 @@ class _QuestionAndAnswersPageState extends State<QuestionAndAnswersPage> {
           title: const Text("All Questions"),
         ),
         backgroundColor: Colors.black,
-        body: StreamBuilder<QuerySnapshot>(
-          stream: questionsRef.snapshots(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) return const LinearProgressIndicator();
+        body: Column(
+          children: [
+            Expanded(
+              child: FutureBuilder<QuerySnapshot>(
+                future: questionsRef.get(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const LinearProgressIndicator();
+                  }
 
-            final docs = snapshot.data!.docs;
-
-            if (docs.isEmpty) {
-              return const Center(
-                child: Text(
-                  "No questions yet.",
-                  style: TextStyle(color: Colors.white70),
-                ),
-              );
-            }
-
-            return ListView(
-              children:
-                  docs.map((doc) {
-                    final data = doc.data() as Map<String, dynamic>;
-                    return ListTile(
-                      title: Text(
-                        data['question'] ?? "Untitled",
-                        style: const TextStyle(color: Colors.white),
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        'Error: ${snapshot.error}',
+                        style: const TextStyle(color: Colors.white70),
                       ),
-                      subtitle: Text(
-                        "by ${data['username'] ?? "Unknown"}",
-                        style: const TextStyle(color: Colors.white54),
-                      ),
-                      onTap: () {
-                        Get.to(
-                          () => QuestionAndAnswersPage(
-                            videoId: widget.videoId,
-                            questionId: doc.id,
-                          ),
-                          preventDuplicates: false,
-                        );
-                      },
                     );
-                  }).toList(),
-            );
-          },
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "No questions yet.",
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                    );
+                  }
+
+                  final docs = snapshot.data!.docs;
+
+                  return ListView(
+                    children:
+                        docs.map((doc) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          return ListTile(
+                            title: Text(
+                              data['question'] ?? "Untitled",
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            subtitle: Text(
+                              "by ${data['username'] ?? "Unknown"}",
+                              style: const TextStyle(color: Colors.white54),
+                            ),
+                            onTap: () {
+                              Get.to(
+                                () => QuestionAndAnswersPage(
+                                  videoId: widget.videoId,
+                                  questionId: doc.id,
+                                ),
+                                preventDuplicates: false,
+                              );
+                            },
+                          );
+                        }).toList(),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12.0,
+                vertical: 8,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _questionController,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
+                        hintText: "Ask a question...",
+                        hintStyle: TextStyle(color: Colors.white38),
+                        filled: true,
+                        fillColor: Colors.white10,
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide.none,
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                      ),
+                      onSubmitted: (_) => _submitQuestion(),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _isSubmittingQuestion
+                      ? const CircularProgressIndicator()
+                      : IconButton(
+                        icon: const Icon(Icons.send, color: Colors.white),
+                        onPressed: _submitQuestion,
+                      ),
+                ],
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -142,10 +233,13 @@ class _QuestionAndAnswersPageState extends State<QuestionAndAnswersPage> {
           FutureBuilder<DocumentSnapshot>(
             future: questionRef.get(),
             builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: LinearProgressIndicator(),
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 );
               }
 
@@ -179,7 +273,15 @@ class _QuestionAndAnswersPageState extends State<QuestionAndAnswersPage> {
             child: StreamBuilder<QuerySnapshot>(
               stream: answersRef.snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return const CircularProgressIndicator();
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  );
+                }
 
                 final docs = snapshot.data!.docs;
 
