@@ -1,11 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:course_app/Model/notes.dart';
-import 'package:course_app/Model/playlist.dart';
-import 'package:course_app/Model/video.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
