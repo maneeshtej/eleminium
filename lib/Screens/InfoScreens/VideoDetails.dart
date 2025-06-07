@@ -55,6 +55,16 @@ class _VideoDetailsState extends State<VideoDetails> {
     });
   }
 
+  @override
+  void didChangeMetrics() {
+    final orientation = MediaQuery.of(context).orientation;
+    if (orientation == Orientation.landscape) {
+      // enter fullscreen
+    } else {
+      _exitFullscreen();
+    }
+  }
+
   Future<void> loadVideoDetails() async {
     final videoId = widget.videoId;
 
@@ -261,6 +271,7 @@ class _VideoDetailsState extends State<VideoDetails> {
                                     padding: const EdgeInsets.all(10),
                                     child: VideoQuestionsSection(
                                       videoId: widget.videoId,
+                                      exitFullscreen: _exitFullscreen,
                                     ),
                                   );
                                 } else {
@@ -359,6 +370,7 @@ class _VideoDetailsState extends State<VideoDetails> {
                                 padding: const EdgeInsets.all(10),
                                 child: VideoQuestionsSection(
                                   videoId: widget.videoId,
+                                  exitFullscreen: _exitFullscreen,
                                 ),
                               );
                             } else {

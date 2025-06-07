@@ -4,6 +4,7 @@ import 'package:course_app/Screens/Helpers/addPlaylistPage.dart';
 import 'package:course_app/Screens/InfoScreens/playlistDetails.dart';
 import 'package:course_app/Screens/InfoScreens/videoDetails.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:course_app/Services/isarController.dart';
 import 'package:course_app/Model/video.dart';
@@ -26,6 +27,8 @@ class _MycoursesState extends State<Library> {
   void initState() {
     super.initState();
     // Run after the first frame to avoid blocking
+
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
     _loadHistoryVideos();
     _loadPlaylists();

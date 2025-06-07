@@ -36,6 +36,11 @@ class Isarcontroller extends GetxController {
             .filter()
             .playlistNameEqualTo("Watch Later")
             .findFirst();
+    final history =
+        await isar.playlists
+            .filter()
+            .playlistNameEqualTo("History")
+            .findFirst();
 
     await isar.writeTxn(() async {
       if (liked == null) {
@@ -44,6 +49,10 @@ class Isarcontroller extends GetxController {
 
       if (watchLater == null) {
         await isar.playlists.put(Playlist()..playlistName = "Watch Later");
+      }
+
+      if (history == null) {
+        await isar.playlists.put(Playlist()..playlistName = "History");
       }
     });
   }
@@ -398,6 +407,45 @@ class Isarcontroller extends GetxController {
         }).toList();
 
     return watchLaterVideos;
+  }
+
+  // --------------------------------------
+  // ------------- HISTORY ----------------
+  // --------------------------------------
+
+  Future<void> insertOrUpdateintoHistory(
+    String videoId,
+    Map<String, dynamic> data,
+  ) async {
+    final isar = await this.isar;
+
+    final history =
+        await isar.playlists
+            .filter()
+            .playlistNameEqualTo("History")
+            .findFirst();
+
+    if (history == null) {
+      return;
+    }
+
+    await createOrUpdateVideo(videoId, data);
+
+    final video =
+        await isar.videos.filter().videoIdEqualTo(videoId).findFirst();
+    if (video == null) return;
+
+    await isar.writeTxn(() async {
+      await history.videos.load();
+      final doesExist = await history.videos.any(
+        (v) => v.videoId == video.videoId,
+      );
+
+      if (doesExist) return;
+
+      history.videos.add(video);
+      await history.videos.save();
+    });
   }
 
   // --------------------------------------
