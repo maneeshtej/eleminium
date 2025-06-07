@@ -285,12 +285,13 @@ class _MycoursesState extends State<Library> {
                 ),
               ),
 
-            // MaterialButton(
-            //   onPressed: () async {
-            //     await clearAllVideos();
-            //   },
-            //   child: Text("Delete all"),
-            // ),
+            MaterialButton(
+              onPressed: () async {
+                await _isarController.clearAllData();
+                await _isarController.defaultPlaylistInitialize();
+              },
+              child: Text("Delete all"),
+            ),
           ],
         ),
       ),

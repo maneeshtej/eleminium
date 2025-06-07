@@ -55,7 +55,6 @@ class _VideoDetailsState extends State<VideoDetails> {
     });
   }
 
-  @override
   void didChangeMetrics() {
     final orientation = MediaQuery.of(context).orientation;
     if (orientation == Orientation.landscape) {

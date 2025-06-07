@@ -53,7 +53,60 @@ const NotesSchema = CollectionSchema(
   deserialize: _notesDeserialize,
   deserializeProp: _notesDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'videoId': IndexSchema(
+      id: 6273887982249211799,
+      name: r'videoId',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'videoId',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'timestamp': IndexSchema(
+      id: 1852253767416892198,
+      name: r'timestamp',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'timestamp',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    ),
+    r'createdAt': IndexSchema(
+      id: -3433535483987302584,
+      name: r'createdAt',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'createdAt',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    ),
+    r'isSynced': IndexSchema(
+      id: -39763503327887510,
+      name: r'isSynced',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'isSynced',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    )
+  },
   links: {},
   embeddedSchemas: {},
   getId: _notesGetId,
@@ -153,6 +206,30 @@ extension NotesQueryWhereSort on QueryBuilder<Notes, Notes, QWhere> {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
+
+  QueryBuilder<Notes, Notes, QAfterWhere> anyTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'timestamp'),
+      );
+    });
+  }
+
+  QueryBuilder<Notes, Notes, QAfterWhere> anyCreatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'createdAt'),
+      );
+    });
+  }
+
+  QueryBuilder<Notes, Notes, QAfterWhere> anyIsSynced() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'isSynced'),
+      );
+    });
+  }
 }
 
 extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
@@ -218,6 +295,274 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
         upper: upperId,
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<Notes, Notes, QAfterWhereClause> videoIdEqualTo(String videoId) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'videoId',
+        value: [videoId],
+      ));
+    });
+  }
+
+  QueryBuilder<Notes, Notes, QAfterWhereClause> videoIdNotEqualTo(
+      String videoId) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'videoId',
+              lower: [],
+              upper: [videoId],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'videoId',
+              lower: [videoId],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'videoId',
+              lower: [videoId],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'videoId',
+              lower: [],
+              upper: [videoId],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Notes, Notes, QAfterWhereClause> timestampEqualTo(
+      int timestamp) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'timestamp',
+        value: [timestamp],
+      ));
+    });
+  }
+
+  QueryBuilder<Notes, Notes, QAfterWhereClause> timestampNotEqualTo(
+      int timestamp) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [],
+              upper: [timestamp],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [timestamp],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [timestamp],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'timestamp',
+              lower: [],
+              upper: [timestamp],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Notes, Notes, QAfterWhereClause> timestampGreaterThan(
+    int timestamp, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [timestamp],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Notes, Notes, QAfterWhereClause> timestampLessThan(
+    int timestamp, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [],
+        upper: [timestamp],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<Notes, Notes, QAfterWhereClause> timestampBetween(
+    int lowerTimestamp,
+    int upperTimestamp, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'timestamp',
+        lower: [lowerTimestamp],
+        includeLower: includeLower,
+        upper: [upperTimestamp],
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Notes, Notes, QAfterWhereClause> createdAtEqualTo(
+      DateTime createdAt) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'createdAt',
+        value: [createdAt],
+      ));
+    });
+  }
+
+  QueryBuilder<Notes, Notes, QAfterWhereClause> createdAtNotEqualTo(
+      DateTime createdAt) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [],
+              upper: [createdAt],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [createdAt],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [createdAt],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'createdAt',
+              lower: [],
+              upper: [createdAt],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Notes, Notes, QAfterWhereClause> createdAtGreaterThan(
+    DateTime createdAt, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createdAt',
+        lower: [createdAt],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Notes, Notes, QAfterWhereClause> createdAtLessThan(
+    DateTime createdAt, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createdAt',
+        lower: [],
+        upper: [createdAt],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<Notes, Notes, QAfterWhereClause> createdAtBetween(
+    DateTime lowerCreatedAt,
+    DateTime upperCreatedAt, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'createdAt',
+        lower: [lowerCreatedAt],
+        includeLower: includeLower,
+        upper: [upperCreatedAt],
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Notes, Notes, QAfterWhereClause> isSyncedEqualTo(bool isSynced) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'isSynced',
+        value: [isSynced],
+      ));
+    });
+  }
+
+  QueryBuilder<Notes, Notes, QAfterWhereClause> isSyncedNotEqualTo(
+      bool isSynced) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isSynced',
+              lower: [],
+              upper: [isSynced],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isSynced',
+              lower: [isSynced],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isSynced',
+              lower: [isSynced],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isSynced',
+              lower: [],
+              upper: [isSynced],
+              includeUpper: false,
+            ));
+      }
     });
   }
 }

@@ -57,6 +57,18 @@ class Isarcontroller extends GetxController {
     });
   }
 
+  Future<void> clearAllData() async {
+    final isar = await this.isar;
+
+    await isar.writeTxn(() async {
+      // Delete all playlists (this also clears all links)
+      await isar.playlists.clear();
+
+      // Delete all videos
+      await isar.videos.clear();
+    });
+  }
+
   // --------------------------------------
   // -------------- UTILITY ---------------
   // --------------------------------------
