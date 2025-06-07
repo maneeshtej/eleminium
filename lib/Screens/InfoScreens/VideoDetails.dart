@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:course_app/Screens/Helpers/addPlaylistPage.dart';
-import 'package:course_app/Screens/InfoScreens/questionDetails.dart';
-import 'package:course_app/Screens/InfoScreens/videoFullscreen.dart';
+import 'package:course_app/Screens/InfoScreens/videoDetailsParts/videoMetaSection.dart';
+import 'package:course_app/Screens/InfoScreens/videoDetailsParts/videoPlayerSection.dart';
+import 'package:course_app/Screens/InfoScreens/videoDetailsParts/videoQuestionsSection.dart';
 import 'package:course_app/Services/DataController.dart';
 import 'package:course_app/Services/isarController.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -18,18 +19,16 @@ class VideoDetails extends StatefulWidget {
 }
 
 class _VideoDetailsState extends State<VideoDetails> {
-  bool _descriptionExpanded = false;
   late YoutubePlayerController _youtubePlayerController;
   final _isarController = Get.find<Isarcontroller>();
   Timer? _progressTimer;
   bool isLiked = false;
   bool isWatcherLater = false;
-  double _dragStartY = 0;
-  double _dragDistance = 0;
+  int selectedSection = 0;
+  bool isFullscreen = false;
+  bool showSidePanel = false;
 
   Map<String, dynamic>? _videoData;
-
-  final String apiKey = 'YOUR_YOUTUBE_API_KEY_HERE';
   final Datacontroller _datacontroller = Datacontroller();
 
   @override
@@ -43,22 +42,17 @@ class _VideoDetailsState extends State<VideoDetails> {
 
     loadVideoDetails();
 
-    // Call the async initializer
-    _checkLikedAndWatchLaterAndPlaylists();
+    int? _lastSavedSecond;
 
-    // Setup periodic progress saving
     _progressTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (_youtubePlayerController.value.isPlaying) {
+      final currentSecond = _youtubePlayerController.value.position.inSeconds;
+      if (_youtubePlayerController.value.isPlaying &&
+          (_lastSavedSecond == null ||
+              currentSecond - _lastSavedSecond! >= 10)) {
+        _lastSavedSecond = currentSecond;
         _saveProgress();
       }
     });
-  }
-
-  Future<void> _checkLikedAndWatchLaterAndPlaylists() async {
-    isLiked = await _isarController.isLiked(widget.videoId);
-    isWatcherLater = await _isarController.isWatchLater(widget.videoId);
-
-    setState(() {}); // Trigger UI update after values are set
   }
 
   Future<void> loadVideoDetails() async {
@@ -140,6 +134,40 @@ class _VideoDetailsState extends State<VideoDetails> {
     await _isarController.createOrUpdateVideo(widget.videoId, data);
   }
 
+  Future<void> _enterFullscreen() async {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    // Optional: hide system overlays for immersive fullscreen
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    setState(() => isFullscreen = true);
+  }
+
+  Future<void> _exitFullscreen() async {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    // Restore system UI overlays
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    setState(() => isFullscreen = false);
+  }
+
+  void _toggleFullscreen() {
+    if (isFullscreen) {
+      _exitFullscreen();
+    } else {
+      _enterFullscreen();
+    }
+  }
+
+  void _toggleSidePanel() {
+    setState(() {
+      showSidePanel = !showSidePanel;
+    });
+  }
+
   @override
   void dispose() {
     _saveProgress(); // Final save
@@ -151,322 +179,225 @@ class _VideoDetailsState extends State<VideoDetails> {
   @override
   Widget build(BuildContext context) {
     final data = _videoData;
+    final _size = MediaQuery.of(context).size;
+    final _aspectRatio = _size.height / _size.width;
+    final _aspectRatio2 = _size.width / _size.height;
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: Text(
-          data?['title'] ?? 'Loading...',
-          style: TextStyle(color: Colors.white),
-        ),
+    return WillPopScope(
+      onWillPop: () async {
+        if (isFullscreen) {
+          await _exitFullscreen();
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        appBar:
+            (isFullscreen)
+                ? null
+                : AppBar(
+                  backgroundColor: Colors.black,
+                  title: Text(data?['title'] ?? "Unknown"),
+                ),
         backgroundColor: Colors.black,
-      ),
-      body:
-          data == null
-              ? Center(child: CircularProgressIndicator(color: Colors.white))
-              : SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GestureDetector(
-                      onVerticalDragStart: (details) {
-                        _dragStartY = details.globalPosition.dy;
-                      },
-                      onVerticalDragUpdate: (details) {
-                        _dragDistance = _dragStartY - details.globalPosition.dy;
-                      },
-                      onVerticalDragEnd: (_) {
-                        if (_dragDistance > 20) {
-                          Get.to(
-                            FullscreenVideoPage(
-                              controller: _youtubePlayerController,
-                            ),
-                          );
-                        }
-                      },
-                      child: SizedBox(
-                        height: 230,
-                        child: YoutubePlayer(
-                          controller: _youtubePlayerController,
-                          showVideoProgressIndicator: true,
-                          bottomActions: [
-                            IconButton(
-                              icon: const Icon(
-                                Icons.replay_10,
-                                color: Colors.white,
-                              ),
-                              onPressed: () {
-                                final pos =
-                                    _youtubePlayerController.value.position;
-                                _youtubePlayerController.seekTo(
-                                  pos - const Duration(seconds: 10),
-                                );
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.forward_10,
-                                color: Colors.white,
-                              ),
-                              onPressed: () {
-                                final pos =
-                                    _youtubePlayerController.value.position;
-                                _youtubePlayerController.seekTo(
-                                  pos + const Duration(seconds: 10),
-                                );
-                              },
-                            ),
-                            CurrentPosition(),
-                            ProgressBar(isExpanded: true),
-
-                            // RemainingDuration(),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.fullscreen,
-                                color: Colors.white,
-                              ),
-                              onPressed: () {
-                                Get.to(
-                                  () => FullscreenVideoPage(
-                                    controller: _youtubePlayerController,
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    FutureBuilder(
-                      future: _isarController.isar,
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData || _videoData == null) {
-                          return SizedBox.shrink();
-                        }
-
-                        final total =
-                            (_videoData?['totalDuration'] ?? 1).toDouble();
-                        final watched =
-                            (_videoData?['watchedDuration'] ?? 0).toDouble();
-                        final progress = (watched / total).clamp(0.0, 1.0);
-
-                        return LinearProgressIndicator(
-                          value: progress,
-                          backgroundColor: Colors.grey[800],
-                          color: Colors.deepPurple,
-                          minHeight:
-                              (_youtubePlayerController.value.isPlaying)
-                                  ? 0
-                                  : 4,
-                        );
-                      },
-                    ),
-
-                    Padding(
-                      padding: const EdgeInsets.only(left: 15),
+        resizeToAvoidBottomInset: true,
+        body: SafeArea(
+          child: Row(
+            children: [
+              if (isFullscreen)
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: showSidePanel ? 350 : 0,
+                  color: Colors.black,
+                  curve: Curves.easeInOut,
+                  child: AnimatedOpacity(
+                    opacity: showSidePanel ? 1 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: 10),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(),
+                          // Your toggle buttons inside the panel
+                          Container(
+                            color: Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
                             child: Row(
-                              spacing: 0,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    Get.to(
-                                      AddPlaylistPage(
-                                        videoId: widget.videoId,
-                                        data: data,
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(20),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      "Playlist",
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(child: SizedBox()),
-                                IconButton(
-                                  onPressed: () async {
-                                    await _isarController.toggleLiked(
-                                      widget.videoId,
-                                      data,
-                                      context,
-                                    );
-                                    final liked = await _isarController.isLiked(
-                                      widget.videoId,
-                                    );
-                                    setState(() {
-                                      isLiked = liked;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    (isLiked)
-                                        ? Icons.thumb_up
-                                        : Icons.thumb_up_outlined,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                SizedBox(width: 5),
-                                IconButton(
-                                  onPressed: () async {
-                                    await _isarController.toggleWatchLater(
-                                      widget.videoId,
-                                      data,
-                                      context,
-                                    );
-                                    final watchlater = await _isarController
-                                        .isWatchLater(widget.videoId);
-
-                                    setState(() {
-                                      isWatcherLater = watchlater;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    !isWatcherLater
-                                        ? Icons.watch_later_outlined
-                                        : Icons.watch_later,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                SizedBox(width: 20),
+                                _buildToggleButton("Details", 0),
+                                _buildToggleButton("Questions", 1),
+                                _buildToggleButton("Notes", 2),
                               ],
                             ),
                           ),
-                          SizedBox(height: 5),
-                          Text(
-                            data['title'] ?? '',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 5),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'By ${data['channelTitle'] ?? "Unknown"}',
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          ),
-                          SizedBox(height: 5),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Published on ${data['publishedAt'].toString().split("T")[0]}',
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          ),
-
-                          SizedBox(height: 10),
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _descriptionExpanded = !_descriptionExpanded;
-                              });
-                            },
-                            child: RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text:
-                                        _descriptionExpanded
-                                            ? data['description']
-                                            : (data['description'] as String)
-                                                    .length >
-                                                200
-                                            ? data['description'].substring(
-                                                  0,
-                                                  200,
-                                                ) +
-                                                '... '
-                                            : data['description'],
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  if ((data['description'] as String).length >
-                                      200)
-                                    TextSpan(
-                                      text:
-                                          _descriptionExpanded
-                                              ? 'Show less'
-                                              : 'Read more',
-                                      style: TextStyle(
-                                        color: Colors.blueAccent,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                          const Divider(color: Colors.white24),
+                          // Content below toggle buttons
+                          Expanded(
+                            child: Builder(
+                              builder: (context) {
+                                if (selectedSection == 0) {
+                                  return _videoData != null
+                                      ? CustomScrollView(
+                                        slivers: [
+                                          SliverPadding(
+                                            padding: const EdgeInsets.only(
+                                              left: 15,
+                                              top: 10,
+                                            ),
+                                            sliver: SliverToBoxAdapter(
+                                              child: VideoMetaSection(
+                                                data: _videoData!,
+                                                videoId: widget.videoId,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                      : const Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                } else if (selectedSection == 1) {
+                                  return SingleChildScrollView(
+                                    padding: const EdgeInsets.all(10),
+                                    child: VideoQuestionsSection(
+                                      videoId: widget.videoId,
                                     ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 50),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0,
-                              vertical: 8,
-                            ),
-                            child: GestureDetector(
-                              onTap: () {
-                                Get.to(
-                                  () => QuestionsPage(videoId: widget.videoId),
-                                );
+                                  );
+                                } else {
+                                  return const SingleChildScrollView(
+                                    padding: EdgeInsets.all(16),
+                                    child: Text(
+                                      "Notes and timestamps go here.",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  );
+                                }
                               },
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white10,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.white30),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: const [
-                                    Text(
-                                      "View Questions",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Icon(
-                                      Icons.arrow_forward_ios,
-                                      color: Colors.white,
-                                      size: 16,
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
+                  ),
+                ),
+
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    AspectRatio(
+                      aspectRatio:
+                          (isFullscreen) ? _aspectRatio2 : _aspectRatio,
+                      child: VideoPlayerSection(
+                        controller: _youtubePlayerController,
+                        toggleFullscreen: _toggleFullscreen,
+                        isFullscreen: isFullscreen,
+                        toggleSidePanel: _toggleSidePanel,
+                      ),
+                    ),
+
+                    if (isFullscreen)
+                      Expanded(
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child:
+                              showSidePanel
+                                  ? Container(
+                                    key: ValueKey('panel'),
+                                    color: Colors.black,
+                                    child: Text('Chapters'),
+                                  )
+                                  : SizedBox(key: ValueKey('empty')),
+                        ),
+                      ),
+
+                    // Toggle buttons
+                    if (!isFullscreen)
+                      Container(
+                        color: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildToggleButton("Details", 0),
+                            _buildToggleButton("Questions", 1),
+                            _buildToggleButton("Notes", 2),
+                          ],
+                        ),
+                      ),
+
+                    if (!isFullscreen)
+                      Divider(height: 1, color: Colors.white10),
+
+                    if (!isFullscreen)
+                      Expanded(
+                        child: Builder(
+                          builder: (context) {
+                            if (selectedSection == 0) {
+                              return data != null
+                                  ? CustomScrollView(
+                                    slivers: [
+                                      SliverPadding(
+                                        padding: const EdgeInsets.only(
+                                          left: 15,
+                                          top: 10,
+                                        ),
+                                        sliver: SliverToBoxAdapter(
+                                          child: VideoMetaSection(
+                                            data: data,
+                                            videoId: widget.videoId,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                  : const Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                            } else if (selectedSection == 1) {
+                              return SingleChildScrollView(
+                                padding: const EdgeInsets.all(10),
+                                child: VideoQuestionsSection(
+                                  videoId: widget.videoId,
+                                ),
+                              );
+                            } else {
+                              return const SingleChildScrollView(
+                                padding: EdgeInsets.all(16),
+                                child: Text(
+                                  "Notes and timestamps go here.",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ),
                   ],
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToggleButton(String label, int index) {
+    final isSelected = selectedSection == index;
+    return TextButton(
+      onPressed: () {
+        setState(() {
+          selectedSection = index;
+        });
+      },
+      child: Text(
+        label,
+        style: TextStyle(
+          color: isSelected ? Colors.white : Colors.white60,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
     );
   }
 }
