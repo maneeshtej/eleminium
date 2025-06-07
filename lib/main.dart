@@ -14,7 +14,6 @@ void main() async {
   Get.put(Datacontroller());
   Get.put(Isarcontroller());
   await Get.find<Isarcontroller>().defaultPlaylistInitialize();
-
   runApp(const MyApp());
 }
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:course_app/Screens/InfoScreens/videoDetailsParts/videoMetaSection.dart';
+import 'package:course_app/Screens/InfoScreens/videoDetailsParts/videoNotesSection.dart';
 import 'package:course_app/Screens/InfoScreens/videoDetailsParts/videoPlayerSection.dart';
 import 'package:course_app/Screens/InfoScreens/videoDetailsParts/videoQuestionsSection.dart';
 import 'package:course_app/Services/DataController.dart';
@@ -274,12 +275,10 @@ class _VideoDetailsState extends State<VideoDetails> {
                                     ),
                                   );
                                 } else {
-                                  return const SingleChildScrollView(
-                                    padding: EdgeInsets.all(16),
-                                    child: Text(
-                                      "Notes and timestamps go here.",
-                                      style: TextStyle(color: Colors.white),
-                                    ),
+                                  return VideoNotesSection(
+                                    videoId: widget.videoId,
+                                    youtubePlayerController:
+                                        _youtubePlayerController,
                                   );
                                 }
                               },
@@ -373,12 +372,10 @@ class _VideoDetailsState extends State<VideoDetails> {
                                 ),
                               );
                             } else {
-                              return const SingleChildScrollView(
-                                padding: EdgeInsets.all(16),
-                                child: Text(
-                                  "Notes and timestamps go here.",
-                                  style: TextStyle(color: Colors.white),
-                                ),
+                              return VideoNotesSection(
+                                videoId: widget.videoId,
+                                youtubePlayerController:
+                                    _youtubePlayerController,
                               );
                             }
                           },

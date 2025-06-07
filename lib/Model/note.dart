@@ -1,9 +1,9 @@
 import 'package:isar/isar.dart';
 
-part 'notes.g.dart';
+part 'note.g.dart';
 
 @Collection()
-class Notes {
+class Note {
   Id id = Isar.autoIncrement;
 
   @Index()
@@ -12,13 +12,13 @@ class Notes {
   late String note;
 
   @Index()
-  late int timestamp;
+  late int timestamp; // e.g., milliseconds since epoch
 
   @Index()
   DateTime createdAt = DateTime.now();
 
   List<String> imagePaths = [];
 
-  @Index()
+  @Index() // optional, might not improve much
   bool isSynced = false;
 }

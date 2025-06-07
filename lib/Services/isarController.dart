@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:course_app/Model/note.dart';
 import 'package:course_app/Model/playlist.dart';
 import 'package:course_app/Model/video.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,11 @@ class Isarcontroller extends GetxController {
 
   Future<Isar> openDB() async {
     final dir = await getApplicationDocumentsDirectory();
-    return await Isar.open([VideoSchema, PlaylistSchema], directory: dir.path);
+    return await Isar.open([
+      VideoSchema,
+      PlaylistSchema,
+      NoteSchema,
+    ], directory: dir.path);
   }
 
   // --------------------------------------
@@ -544,5 +549,90 @@ class Isarcontroller extends GetxController {
         await playlist.videos.remove(videoToRemove);
       }
     });
+  }
+
+  Future<void> createOrUpdateNote({
+    Id? noteId,
+    required String videoId,
+    required String note,
+    required int timestamp,
+    List<String>? imagePaths,
+    bool? isSynced,
+  }) async {
+    final isar = await this.isar;
+
+    Note? noteToSave;
+
+    if (noteId != null) {
+      noteToSave = await isar.notes.get(noteId);
+      if (noteToSave == null) return;
+    } else {
+      // Look for note with timestamp within ±1000 ms (1 second)
+      final duplicate =
+          await isar.notes
+              .filter()
+              .videoIdEqualTo(videoId)
+              .timestampBetween(timestamp - 1000, timestamp + 1000)
+              .findFirst();
+
+      if (duplicate != null) {
+        noteToSave = duplicate;
+      } else {
+        noteToSave = Note()..createdAt = DateTime.now();
+      }
+    }
+
+    noteToSave
+      ..videoId = videoId
+      ..note = note
+      ..timestamp = timestamp
+      ..imagePaths = imagePaths ?? []
+      ..isSynced = isSynced ?? false;
+
+    await isar.writeTxn(() async {
+      await isar.notes.put(noteToSave!);
+    });
+  }
+
+  // ------------------------------
+  // DELETE NOTE
+  // ------------------------------
+
+  Future<void> deleteNote(Id noteId) async {
+    final isar = await this.isar;
+    final exists = await isar.notes.get(noteId);
+    if (exists == null) return;
+
+    await isar.writeTxn(() async {
+      await isar.notes.delete(noteId);
+    });
+  }
+
+  // ------------------------------
+  // FETCH ALL NOTES BY VIDEO ID
+  // ------------------------------
+  Future<List<Map<String, dynamic>>> getAllNotes(String videoId) async {
+    final isar = await this.isar;
+
+    final notes =
+        await isar.notes
+            .filter()
+            .videoIdEqualTo(videoId)
+            .sortByTimestamp()
+            .findAll();
+
+    return notes
+        .map(
+          (n) => {
+            'id': n.id,
+            'note': n.note,
+            'timestamp': n.timestamp,
+            'createdAt': n.createdAt,
+            'imagePaths': n.imagePaths,
+            'isSynced': n.isSynced,
+            'videoId': n.videoId,
+          },
+        )
+        .toList();
   }
 }

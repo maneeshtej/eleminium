@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'notes.dart';
+part of 'note.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator
@@ -9,13 +9,13 @@ part of 'notes.dart';
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-extension GetNotesCollection on Isar {
-  IsarCollection<Notes> get notes => this.collection();
+extension GetNoteCollection on Isar {
+  IsarCollection<Note> get notes => this.collection();
 }
 
-const NotesSchema = CollectionSchema(
-  name: r'Notes',
-  id: 1316144172548953035,
+const NoteSchema = CollectionSchema(
+  name: r'Note',
+  id: 6284318083599466921,
   properties: {
     r'createdAt': PropertySchema(
       id: 0,
@@ -48,10 +48,10 @@ const NotesSchema = CollectionSchema(
       type: IsarType.string,
     )
   },
-  estimateSize: _notesEstimateSize,
-  serialize: _notesSerialize,
-  deserialize: _notesDeserialize,
-  deserializeProp: _notesDeserializeProp,
+  estimateSize: _noteEstimateSize,
+  serialize: _noteSerialize,
+  deserialize: _noteDeserialize,
+  deserializeProp: _noteDeserializeProp,
   idName: r'id',
   indexes: {
     r'videoId': IndexSchema(
@@ -109,14 +109,14 @@ const NotesSchema = CollectionSchema(
   },
   links: {},
   embeddedSchemas: {},
-  getId: _notesGetId,
-  getLinks: _notesGetLinks,
-  attach: _notesAttach,
+  getId: _noteGetId,
+  getLinks: _noteGetLinks,
+  attach: _noteAttach,
   version: '3.1.0+1',
 );
 
-int _notesEstimateSize(
-  Notes object,
+int _noteEstimateSize(
+  Note object,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
@@ -133,8 +133,8 @@ int _notesEstimateSize(
   return bytesCount;
 }
 
-void _notesSerialize(
-  Notes object,
+void _noteSerialize(
+  Note object,
   IsarWriter writer,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
@@ -147,13 +147,13 @@ void _notesSerialize(
   writer.writeString(offsets[5], object.videoId);
 }
 
-Notes _notesDeserialize(
+Note _noteDeserialize(
   Id id,
   IsarReader reader,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = Notes();
+  final object = Note();
   object.createdAt = reader.readDateTime(offsets[0]);
   object.id = id;
   object.imagePaths = reader.readStringList(offsets[1]) ?? [];
@@ -164,7 +164,7 @@ Notes _notesDeserialize(
   return object;
 }
 
-P _notesDeserializeProp<P>(
+P _noteDeserializeProp<P>(
   IsarReader reader,
   int propertyId,
   int offset,
@@ -188,26 +188,26 @@ P _notesDeserializeProp<P>(
   }
 }
 
-Id _notesGetId(Notes object) {
+Id _noteGetId(Note object) {
   return object.id;
 }
 
-List<IsarLinkBase<dynamic>> _notesGetLinks(Notes object) {
+List<IsarLinkBase<dynamic>> _noteGetLinks(Note object) {
   return [];
 }
 
-void _notesAttach(IsarCollection<dynamic> col, Id id, Notes object) {
+void _noteAttach(IsarCollection<dynamic> col, Id id, Note object) {
   object.id = id;
 }
 
-extension NotesQueryWhereSort on QueryBuilder<Notes, Notes, QWhere> {
-  QueryBuilder<Notes, Notes, QAfterWhere> anyId() {
+extension NoteQueryWhereSort on QueryBuilder<Note, Note, QWhere> {
+  QueryBuilder<Note, Note, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhere> anyTimestamp() {
+  QueryBuilder<Note, Note, QAfterWhere> anyTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         const IndexWhereClause.any(indexName: r'timestamp'),
@@ -215,7 +215,7 @@ extension NotesQueryWhereSort on QueryBuilder<Notes, Notes, QWhere> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhere> anyCreatedAt() {
+  QueryBuilder<Note, Note, QAfterWhere> anyCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         const IndexWhereClause.any(indexName: r'createdAt'),
@@ -223,7 +223,7 @@ extension NotesQueryWhereSort on QueryBuilder<Notes, Notes, QWhere> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhere> anyIsSynced() {
+  QueryBuilder<Note, Note, QAfterWhere> anyIsSynced() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         const IndexWhereClause.any(indexName: r'isSynced'),
@@ -232,8 +232,8 @@ extension NotesQueryWhereSort on QueryBuilder<Notes, Notes, QWhere> {
   }
 }
 
-extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
-  QueryBuilder<Notes, Notes, QAfterWhereClause> idEqualTo(Id id) {
+extension NoteQueryWhere on QueryBuilder<Note, Note, QWhereClause> {
+  QueryBuilder<Note, Note, QAfterWhereClause> idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
         lower: id,
@@ -242,7 +242,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> idNotEqualTo(Id id) {
+  QueryBuilder<Note, Note, QAfterWhereClause> idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -264,7 +264,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> idGreaterThan(Id id,
+  QueryBuilder<Note, Note, QAfterWhereClause> idGreaterThan(Id id,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
@@ -273,7 +273,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> idLessThan(Id id,
+  QueryBuilder<Note, Note, QAfterWhereClause> idLessThan(Id id,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
@@ -282,7 +282,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> idBetween(
+  QueryBuilder<Note, Note, QAfterWhereClause> idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
@@ -298,7 +298,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> videoIdEqualTo(String videoId) {
+  QueryBuilder<Note, Note, QAfterWhereClause> videoIdEqualTo(String videoId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'videoId',
@@ -307,7 +307,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> videoIdNotEqualTo(
+  QueryBuilder<Note, Note, QAfterWhereClause> videoIdNotEqualTo(
       String videoId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
@@ -342,8 +342,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> timestampEqualTo(
-      int timestamp) {
+  QueryBuilder<Note, Note, QAfterWhereClause> timestampEqualTo(int timestamp) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'timestamp',
@@ -352,7 +351,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> timestampNotEqualTo(
+  QueryBuilder<Note, Note, QAfterWhereClause> timestampNotEqualTo(
       int timestamp) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
@@ -387,7 +386,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> timestampGreaterThan(
+  QueryBuilder<Note, Note, QAfterWhereClause> timestampGreaterThan(
     int timestamp, {
     bool include = false,
   }) {
@@ -401,7 +400,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> timestampLessThan(
+  QueryBuilder<Note, Note, QAfterWhereClause> timestampLessThan(
     int timestamp, {
     bool include = false,
   }) {
@@ -415,7 +414,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> timestampBetween(
+  QueryBuilder<Note, Note, QAfterWhereClause> timestampBetween(
     int lowerTimestamp,
     int upperTimestamp, {
     bool includeLower = true,
@@ -432,7 +431,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> createdAtEqualTo(
+  QueryBuilder<Note, Note, QAfterWhereClause> createdAtEqualTo(
       DateTime createdAt) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
@@ -442,7 +441,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> createdAtNotEqualTo(
+  QueryBuilder<Note, Note, QAfterWhereClause> createdAtNotEqualTo(
       DateTime createdAt) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
@@ -477,7 +476,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> createdAtGreaterThan(
+  QueryBuilder<Note, Note, QAfterWhereClause> createdAtGreaterThan(
     DateTime createdAt, {
     bool include = false,
   }) {
@@ -491,7 +490,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> createdAtLessThan(
+  QueryBuilder<Note, Note, QAfterWhereClause> createdAtLessThan(
     DateTime createdAt, {
     bool include = false,
   }) {
@@ -505,7 +504,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> createdAtBetween(
+  QueryBuilder<Note, Note, QAfterWhereClause> createdAtBetween(
     DateTime lowerCreatedAt,
     DateTime upperCreatedAt, {
     bool includeLower = true,
@@ -522,7 +521,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> isSyncedEqualTo(bool isSynced) {
+  QueryBuilder<Note, Note, QAfterWhereClause> isSyncedEqualTo(bool isSynced) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'isSynced',
@@ -531,7 +530,7 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterWhereClause> isSyncedNotEqualTo(
+  QueryBuilder<Note, Note, QAfterWhereClause> isSyncedNotEqualTo(
       bool isSynced) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
@@ -567,8 +566,8 @@ extension NotesQueryWhere on QueryBuilder<Notes, Notes, QWhereClause> {
   }
 }
 
-extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> createdAtEqualTo(
+extension NoteQueryFilter on QueryBuilder<Note, Note, QFilterCondition> {
+  QueryBuilder<Note, Note, QAfterFilterCondition> createdAtEqualTo(
       DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -578,7 +577,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> createdAtGreaterThan(
+  QueryBuilder<Note, Note, QAfterFilterCondition> createdAtGreaterThan(
     DateTime value, {
     bool include = false,
   }) {
@@ -591,7 +590,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> createdAtLessThan(
+  QueryBuilder<Note, Note, QAfterFilterCondition> createdAtLessThan(
     DateTime value, {
     bool include = false,
   }) {
@@ -604,7 +603,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> createdAtBetween(
+  QueryBuilder<Note, Note, QAfterFilterCondition> createdAtBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
@@ -621,7 +620,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> idEqualTo(Id value) {
+  QueryBuilder<Note, Note, QAfterFilterCondition> idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'id',
@@ -630,7 +629,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> idGreaterThan(
+  QueryBuilder<Note, Note, QAfterFilterCondition> idGreaterThan(
     Id value, {
     bool include = false,
   }) {
@@ -643,7 +642,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> idLessThan(
+  QueryBuilder<Note, Note, QAfterFilterCondition> idLessThan(
     Id value, {
     bool include = false,
   }) {
@@ -656,7 +655,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> idBetween(
+  QueryBuilder<Note, Note, QAfterFilterCondition> idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -673,7 +672,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> imagePathsElementEqualTo(
+  QueryBuilder<Note, Note, QAfterFilterCondition> imagePathsElementEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -686,8 +685,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition>
-      imagePathsElementGreaterThan(
+  QueryBuilder<Note, Note, QAfterFilterCondition> imagePathsElementGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -702,7 +700,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> imagePathsElementLessThan(
+  QueryBuilder<Note, Note, QAfterFilterCondition> imagePathsElementLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -717,7 +715,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> imagePathsElementBetween(
+  QueryBuilder<Note, Note, QAfterFilterCondition> imagePathsElementBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -736,7 +734,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> imagePathsElementStartsWith(
+  QueryBuilder<Note, Note, QAfterFilterCondition> imagePathsElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -749,7 +747,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> imagePathsElementEndsWith(
+  QueryBuilder<Note, Note, QAfterFilterCondition> imagePathsElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -762,7 +760,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> imagePathsElementContains(
+  QueryBuilder<Note, Note, QAfterFilterCondition> imagePathsElementContains(
       String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -774,7 +772,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> imagePathsElementMatches(
+  QueryBuilder<Note, Note, QAfterFilterCondition> imagePathsElementMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -786,7 +784,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> imagePathsElementIsEmpty() {
+  QueryBuilder<Note, Note, QAfterFilterCondition> imagePathsElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'imagePaths',
@@ -795,7 +793,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition>
+  QueryBuilder<Note, Note, QAfterFilterCondition>
       imagePathsElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
@@ -805,7 +803,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> imagePathsLengthEqualTo(
+  QueryBuilder<Note, Note, QAfterFilterCondition> imagePathsLengthEqualTo(
       int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
@@ -818,7 +816,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> imagePathsIsEmpty() {
+  QueryBuilder<Note, Note, QAfterFilterCondition> imagePathsIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
         r'imagePaths',
@@ -830,7 +828,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> imagePathsIsNotEmpty() {
+  QueryBuilder<Note, Note, QAfterFilterCondition> imagePathsIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
         r'imagePaths',
@@ -842,7 +840,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> imagePathsLengthLessThan(
+  QueryBuilder<Note, Note, QAfterFilterCondition> imagePathsLengthLessThan(
     int length, {
     bool include = false,
   }) {
@@ -857,7 +855,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> imagePathsLengthGreaterThan(
+  QueryBuilder<Note, Note, QAfterFilterCondition> imagePathsLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
@@ -872,7 +870,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> imagePathsLengthBetween(
+  QueryBuilder<Note, Note, QAfterFilterCondition> imagePathsLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -889,8 +887,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> isSyncedEqualTo(
-      bool value) {
+  QueryBuilder<Note, Note, QAfterFilterCondition> isSyncedEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'isSynced',
@@ -899,7 +896,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> noteEqualTo(
+  QueryBuilder<Note, Note, QAfterFilterCondition> noteEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -912,7 +909,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> noteGreaterThan(
+  QueryBuilder<Note, Note, QAfterFilterCondition> noteGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -927,7 +924,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> noteLessThan(
+  QueryBuilder<Note, Note, QAfterFilterCondition> noteLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -942,7 +939,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> noteBetween(
+  QueryBuilder<Note, Note, QAfterFilterCondition> noteBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -961,7 +958,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> noteStartsWith(
+  QueryBuilder<Note, Note, QAfterFilterCondition> noteStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -974,7 +971,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> noteEndsWith(
+  QueryBuilder<Note, Note, QAfterFilterCondition> noteEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -987,7 +984,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> noteContains(String value,
+  QueryBuilder<Note, Note, QAfterFilterCondition> noteContains(String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -998,7 +995,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> noteMatches(String pattern,
+  QueryBuilder<Note, Note, QAfterFilterCondition> noteMatches(String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -1009,7 +1006,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> noteIsEmpty() {
+  QueryBuilder<Note, Note, QAfterFilterCondition> noteIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'note',
@@ -1018,7 +1015,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> noteIsNotEmpty() {
+  QueryBuilder<Note, Note, QAfterFilterCondition> noteIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'note',
@@ -1027,8 +1024,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> timestampEqualTo(
-      int value) {
+  QueryBuilder<Note, Note, QAfterFilterCondition> timestampEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'timestamp',
@@ -1037,7 +1033,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> timestampGreaterThan(
+  QueryBuilder<Note, Note, QAfterFilterCondition> timestampGreaterThan(
     int value, {
     bool include = false,
   }) {
@@ -1050,7 +1046,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> timestampLessThan(
+  QueryBuilder<Note, Note, QAfterFilterCondition> timestampLessThan(
     int value, {
     bool include = false,
   }) {
@@ -1063,7 +1059,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> timestampBetween(
+  QueryBuilder<Note, Note, QAfterFilterCondition> timestampBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -1080,7 +1076,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> videoIdEqualTo(
+  QueryBuilder<Note, Note, QAfterFilterCondition> videoIdEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1093,7 +1089,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> videoIdGreaterThan(
+  QueryBuilder<Note, Note, QAfterFilterCondition> videoIdGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1108,7 +1104,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> videoIdLessThan(
+  QueryBuilder<Note, Note, QAfterFilterCondition> videoIdLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1123,7 +1119,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> videoIdBetween(
+  QueryBuilder<Note, Note, QAfterFilterCondition> videoIdBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1142,7 +1138,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> videoIdStartsWith(
+  QueryBuilder<Note, Note, QAfterFilterCondition> videoIdStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1155,7 +1151,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> videoIdEndsWith(
+  QueryBuilder<Note, Note, QAfterFilterCondition> videoIdEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1168,8 +1164,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> videoIdContains(
-      String value,
+  QueryBuilder<Note, Note, QAfterFilterCondition> videoIdContains(String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -1180,8 +1175,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> videoIdMatches(
-      String pattern,
+  QueryBuilder<Note, Note, QAfterFilterCondition> videoIdMatches(String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -1192,7 +1186,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> videoIdIsEmpty() {
+  QueryBuilder<Note, Note, QAfterFilterCondition> videoIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'videoId',
@@ -1201,7 +1195,7 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterFilterCondition> videoIdIsNotEmpty() {
+  QueryBuilder<Note, Note, QAfterFilterCondition> videoIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'videoId',
@@ -1211,179 +1205,179 @@ extension NotesQueryFilter on QueryBuilder<Notes, Notes, QFilterCondition> {
   }
 }
 
-extension NotesQueryObject on QueryBuilder<Notes, Notes, QFilterCondition> {}
+extension NoteQueryObject on QueryBuilder<Note, Note, QFilterCondition> {}
 
-extension NotesQueryLinks on QueryBuilder<Notes, Notes, QFilterCondition> {}
+extension NoteQueryLinks on QueryBuilder<Note, Note, QFilterCondition> {}
 
-extension NotesQuerySortBy on QueryBuilder<Notes, Notes, QSortBy> {
-  QueryBuilder<Notes, Notes, QAfterSortBy> sortByCreatedAt() {
+extension NoteQuerySortBy on QueryBuilder<Note, Note, QSortBy> {
+  QueryBuilder<Note, Note, QAfterSortBy> sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> sortByCreatedAtDesc() {
+  QueryBuilder<Note, Note, QAfterSortBy> sortByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> sortByIsSynced() {
+  QueryBuilder<Note, Note, QAfterSortBy> sortByIsSynced() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isSynced', Sort.asc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> sortByIsSyncedDesc() {
+  QueryBuilder<Note, Note, QAfterSortBy> sortByIsSyncedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isSynced', Sort.desc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> sortByNote() {
+  QueryBuilder<Note, Note, QAfterSortBy> sortByNote() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'note', Sort.asc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> sortByNoteDesc() {
+  QueryBuilder<Note, Note, QAfterSortBy> sortByNoteDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'note', Sort.desc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> sortByTimestamp() {
+  QueryBuilder<Note, Note, QAfterSortBy> sortByTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'timestamp', Sort.asc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> sortByTimestampDesc() {
+  QueryBuilder<Note, Note, QAfterSortBy> sortByTimestampDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'timestamp', Sort.desc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> sortByVideoId() {
+  QueryBuilder<Note, Note, QAfterSortBy> sortByVideoId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'videoId', Sort.asc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> sortByVideoIdDesc() {
+  QueryBuilder<Note, Note, QAfterSortBy> sortByVideoIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'videoId', Sort.desc);
     });
   }
 }
 
-extension NotesQuerySortThenBy on QueryBuilder<Notes, Notes, QSortThenBy> {
-  QueryBuilder<Notes, Notes, QAfterSortBy> thenByCreatedAt() {
+extension NoteQuerySortThenBy on QueryBuilder<Note, Note, QSortThenBy> {
+  QueryBuilder<Note, Note, QAfterSortBy> thenByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> thenByCreatedAtDesc() {
+  QueryBuilder<Note, Note, QAfterSortBy> thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> thenById() {
+  QueryBuilder<Note, Note, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> thenByIdDesc() {
+  QueryBuilder<Note, Note, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> thenByIsSynced() {
+  QueryBuilder<Note, Note, QAfterSortBy> thenByIsSynced() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isSynced', Sort.asc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> thenByIsSyncedDesc() {
+  QueryBuilder<Note, Note, QAfterSortBy> thenByIsSyncedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isSynced', Sort.desc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> thenByNote() {
+  QueryBuilder<Note, Note, QAfterSortBy> thenByNote() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'note', Sort.asc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> thenByNoteDesc() {
+  QueryBuilder<Note, Note, QAfterSortBy> thenByNoteDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'note', Sort.desc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> thenByTimestamp() {
+  QueryBuilder<Note, Note, QAfterSortBy> thenByTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'timestamp', Sort.asc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> thenByTimestampDesc() {
+  QueryBuilder<Note, Note, QAfterSortBy> thenByTimestampDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'timestamp', Sort.desc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> thenByVideoId() {
+  QueryBuilder<Note, Note, QAfterSortBy> thenByVideoId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'videoId', Sort.asc);
     });
   }
 
-  QueryBuilder<Notes, Notes, QAfterSortBy> thenByVideoIdDesc() {
+  QueryBuilder<Note, Note, QAfterSortBy> thenByVideoIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'videoId', Sort.desc);
     });
   }
 }
 
-extension NotesQueryWhereDistinct on QueryBuilder<Notes, Notes, QDistinct> {
-  QueryBuilder<Notes, Notes, QDistinct> distinctByCreatedAt() {
+extension NoteQueryWhereDistinct on QueryBuilder<Note, Note, QDistinct> {
+  QueryBuilder<Note, Note, QDistinct> distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'createdAt');
     });
   }
 
-  QueryBuilder<Notes, Notes, QDistinct> distinctByImagePaths() {
+  QueryBuilder<Note, Note, QDistinct> distinctByImagePaths() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'imagePaths');
     });
   }
 
-  QueryBuilder<Notes, Notes, QDistinct> distinctByIsSynced() {
+  QueryBuilder<Note, Note, QDistinct> distinctByIsSynced() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isSynced');
     });
   }
 
-  QueryBuilder<Notes, Notes, QDistinct> distinctByNote(
+  QueryBuilder<Note, Note, QDistinct> distinctByNote(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'note', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<Notes, Notes, QDistinct> distinctByTimestamp() {
+  QueryBuilder<Note, Note, QDistinct> distinctByTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'timestamp');
     });
   }
 
-  QueryBuilder<Notes, Notes, QDistinct> distinctByVideoId(
+  QueryBuilder<Note, Note, QDistinct> distinctByVideoId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'videoId', caseSensitive: caseSensitive);
@@ -1391,44 +1385,44 @@ extension NotesQueryWhereDistinct on QueryBuilder<Notes, Notes, QDistinct> {
   }
 }
 
-extension NotesQueryProperty on QueryBuilder<Notes, Notes, QQueryProperty> {
-  QueryBuilder<Notes, int, QQueryOperations> idProperty() {
+extension NoteQueryProperty on QueryBuilder<Note, Note, QQueryProperty> {
+  QueryBuilder<Note, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<Notes, DateTime, QQueryOperations> createdAtProperty() {
+  QueryBuilder<Note, DateTime, QQueryOperations> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createdAt');
     });
   }
 
-  QueryBuilder<Notes, List<String>, QQueryOperations> imagePathsProperty() {
+  QueryBuilder<Note, List<String>, QQueryOperations> imagePathsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'imagePaths');
     });
   }
 
-  QueryBuilder<Notes, bool, QQueryOperations> isSyncedProperty() {
+  QueryBuilder<Note, bool, QQueryOperations> isSyncedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isSynced');
     });
   }
 
-  QueryBuilder<Notes, String, QQueryOperations> noteProperty() {
+  QueryBuilder<Note, String, QQueryOperations> noteProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'note');
     });
   }
 
-  QueryBuilder<Notes, int, QQueryOperations> timestampProperty() {
+  QueryBuilder<Note, int, QQueryOperations> timestampProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'timestamp');
     });
   }
 
-  QueryBuilder<Notes, String, QQueryOperations> videoIdProperty() {
+  QueryBuilder<Note, String, QQueryOperations> videoIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'videoId');
     });
