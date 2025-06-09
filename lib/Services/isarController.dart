@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:course_app/Model/note.dart';
 import 'package:course_app/Model/playlist.dart';
 import 'package:course_app/Model/video.dart';
@@ -551,6 +552,10 @@ class Isarcontroller extends GetxController {
     });
   }
 
+  // ------------------------------
+  // ----------- NOTES ------------
+  // ------------------------------
+
   Future<void> createOrUpdateNote({
     Id? noteId,
     required String videoId,
@@ -560,6 +565,7 @@ class Isarcontroller extends GetxController {
     bool? isSynced,
   }) async {
     final isar = await this.isar;
+    final firestore = FirebaseFirestore.instance;
 
     Note? noteToSave;
 
@@ -587,30 +593,119 @@ class Isarcontroller extends GetxController {
       ..note = note
       ..timestamp = timestamp
       ..imagePaths = imagePaths ?? []
-      ..isSynced = isSynced ?? false;
+      ..isSynced = false;
 
     await isar.writeTxn(() async {
       await isar.notes.put(noteToSave!);
     });
   }
 
-  // ------------------------------
-  // DELETE NOTE
-  // ------------------------------
-
   Future<void> deleteNote(Id noteId) async {
     final isar = await this.isar;
-    final exists = await isar.notes.get(noteId);
-    if (exists == null) return;
+    final firestore = FirebaseFirestore.instance;
 
+    final note = await isar.notes.get(noteId);
+    if (note == null) return;
+
+    // Build deterministic Firebase doc ID
+    final docId = '${note.videoId}_${note.timestamp ~/ 1000}';
+
+    // Delete from Isar
     await isar.writeTxn(() async {
       await isar.notes.delete(noteId);
     });
   }
 
-  // ------------------------------
-  // FETCH ALL NOTES BY VIDEO ID
-  // ------------------------------
+  Future<void> syncUnsyncedNotesToFirebase() async {
+    final isar = await this.isar;
+    final firestore = FirebaseFirestore.instance;
+
+    final unsyncedNotes =
+        await isar.notes.filter().isSyncedEqualTo(false).findAll();
+
+    for (final note in unsyncedNotes) {
+      final docId = '${note.videoId}-${note.timestamp ~/ 1000}';
+
+      try {
+        await firestore
+            .collection('videos')
+            .doc(note.videoId)
+            .collection('notes')
+            .doc(docId)
+            .set({
+              'videoId': note.videoId,
+              'note': note.note,
+              'timestamp': note.timestamp,
+              'createdAt': note.createdAt.toIso8601String(),
+            });
+
+        note.isSynced = true;
+
+        await isar.writeTxn(() async {
+          await isar.notes.put(note);
+        });
+      } catch (e) {
+        print("Error in updating firebase : ${e}");
+      }
+    }
+  }
+
+  Future<void> syncNotesFromFirebase() async {
+    final isar = await this.isar;
+    final firestore = FirebaseFirestore.instance;
+
+    try {
+      final videosCollection = await firestore.collection('videos').get();
+
+      for (final videoDoc in videosCollection.docs) {
+        final videoId = videoDoc.id;
+        final notesSnapshot =
+            await firestore
+                .collection('videos')
+                .doc(videoId)
+                .collection('notes')
+                .get();
+
+        await isar.writeTxn(() async {
+          for (final doc in notesSnapshot.docs) {
+            final data = doc.data();
+            final timestamp = data['timestamp'] ?? 0;
+
+            // Check if note already exists in Isar
+            final existing =
+                await isar.notes
+                    .filter()
+                    .videoIdEqualTo(videoId)
+                    .timestampBetween(timestamp - 1000, timestamp + 1000)
+                    .findFirst();
+
+            final noteToSave =
+                existing ?? Note()
+                  ..createdAt =
+                      DateTime.tryParse(data['createdAt'] ?? '') ??
+                      DateTime.now();
+
+            noteToSave
+              ..videoId = videoId
+              ..note = data['note'] ?? ''
+              ..timestamp = timestamp
+              ..imagePaths = []
+              ..isSynced = true;
+
+            await isar.notes.put(noteToSave);
+          }
+        });
+      }
+    } catch (e) {
+      print('❌ Failed to sync notes from Firebase: $e');
+    }
+  }
+
+  Future<void> syncAllNotesOnStartup() async {
+    await syncUnsyncedNotesToFirebase();
+    await syncNotesFromFirebase();
+  }
+
   Future<List<Map<String, dynamic>>> getAllNotes(String videoId) async {
     final isar = await this.isar;
 

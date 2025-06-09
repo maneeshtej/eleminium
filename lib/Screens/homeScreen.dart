@@ -1,4 +1,5 @@
 import 'package:course_app/Screens/HomeScreens/account.dart';
+import 'package:course_app/Screens/HomeScreens/featured.dart';
 import 'package:course_app/Screens/HomeScreens/library.dart';
 import 'package:course_app/Screens/HomeScreens/Search.dart';
 import 'package:flutter/material.dart';
@@ -33,12 +34,7 @@ class _HomescreenState extends State<Homescreen> {
           });
         },
         controller: pageController,
-        children: [
-          // Featured(),
-          Search(),
-          Library(),
-          Account(),
-        ],
+        children: [Featured(), Search(), Library(), Account()],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
@@ -55,7 +51,7 @@ class _HomescreenState extends State<Homescreen> {
         ), // Unselected label color
         type: BottomNavigationBarType.fixed,
         items: [
-          // BottomNavigationBarItem(icon: Icon(Icons.star), label: "Featured"),
+          BottomNavigationBarItem(icon: Icon(Icons.star), label: "Featured"),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: "Search"),
 
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Library"),

@@ -88,15 +88,30 @@ class _VideoDetailsState extends State<VideoDetails> {
       };
     });
 
-    // ✅ Auto-seek to last watched position unconditionally
+    bool didSeek = false;
+
     _youtubePlayerController.addListener(() {
-      if (_youtubePlayerController.value.isReady &&
-          updatedVideo.watchedDuration > 0 &&
-          _youtubePlayerController.value.position.inSeconds == 0) {
-        _youtubePlayerController.seekTo(
-          Duration(seconds: updatedVideo.watchedDuration),
-        );
-        _youtubePlayerController.pause();
+      final isReady = _youtubePlayerController.value.isReady;
+      final position = _youtubePlayerController.value.position;
+      final isPlaying = _youtubePlayerController.value.isPlaying;
+
+      if (!didSeek && isReady && position.inSeconds == 0) {
+        final isWatched = updatedVideo.isWatched;
+
+        if (isWatched) {
+          _youtubePlayerController.seekTo(const Duration(seconds: 1));
+          Future.delayed(const Duration(milliseconds: 500), () {
+            _youtubePlayerController.seekTo(Duration.zero); // hard reset
+            _youtubePlayerController.pause(); // optional: prevent auto-play
+          });
+        } else if (updatedVideo.watchedDuration > 0) {
+          _youtubePlayerController.seekTo(
+            Duration(seconds: updatedVideo.watchedDuration),
+          );
+          _youtubePlayerController.pause(); // optional
+        }
+
+        didSeek = true;
       }
     });
 
@@ -130,11 +145,14 @@ class _VideoDetailsState extends State<VideoDetails> {
     final watched = _youtubePlayerController.value.position.inSeconds;
     final total = _youtubePlayerController.metadata.duration.inSeconds;
 
-    // Create a map similar to what createOrUpdateVideo expects
+    if (total == 0) return; // avoid division by zero
+
+    final isWatched = watched >= (total * 0.9); // ✅ 90% threshold
+
     final data = {
       'watchedDuration': watched,
       'totalDuration': total,
-      'isWatched': watched >= total - 5,
+      'isWatched': isWatched,
       if (title != null) 'title': title,
       if (channelTitle != null) 'channelTitle': channelTitle,
       if (thumbnailUrl != null)
