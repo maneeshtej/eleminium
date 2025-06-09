@@ -6,8 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:get/instance_manager.dart';
-import 'package:isar/isar.dart';
 
 class Featured extends StatefulWidget {
   const Featured({super.key});

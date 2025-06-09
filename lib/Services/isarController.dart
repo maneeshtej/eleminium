@@ -565,7 +565,6 @@ class Isarcontroller extends GetxController {
     bool? isSynced,
   }) async {
     final isar = await this.isar;
-    final firestore = FirebaseFirestore.instance;
 
     Note? noteToSave;
 
@@ -602,13 +601,9 @@ class Isarcontroller extends GetxController {
 
   Future<void> deleteNote(Id noteId) async {
     final isar = await this.isar;
-    final firestore = FirebaseFirestore.instance;
 
     final note = await isar.notes.get(noteId);
     if (note == null) return;
-
-    // Build deterministic Firebase doc ID
-    final docId = '${note.videoId}_${note.timestamp ~/ 1000}';
 
     // Delete from Isar
     await isar.writeTxn(() async {

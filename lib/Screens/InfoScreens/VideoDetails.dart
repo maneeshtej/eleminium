@@ -93,7 +93,6 @@ class _VideoDetailsState extends State<VideoDetails> {
     _youtubePlayerController.addListener(() {
       final isReady = _youtubePlayerController.value.isReady;
       final position = _youtubePlayerController.value.position;
-      final isPlaying = _youtubePlayerController.value.isPlaying;
 
       if (!didSeek && isReady && position.inSeconds == 0) {
         final isWatched = updatedVideo.isWatched;
@@ -101,14 +100,14 @@ class _VideoDetailsState extends State<VideoDetails> {
         if (isWatched) {
           _youtubePlayerController.seekTo(const Duration(seconds: 1));
           Future.delayed(const Duration(milliseconds: 500), () {
-            _youtubePlayerController.seekTo(Duration.zero); // hard reset
-            _youtubePlayerController.pause(); // optional: prevent auto-play
+            _youtubePlayerController.seekTo(Duration.zero);
+            _youtubePlayerController.pause();
           });
         } else if (updatedVideo.watchedDuration > 0) {
           _youtubePlayerController.seekTo(
             Duration(seconds: updatedVideo.watchedDuration),
           );
-          _youtubePlayerController.pause(); // optional
+          _youtubePlayerController.pause();
         }
 
         didSeek = true;
